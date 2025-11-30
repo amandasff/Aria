@@ -1,4 +1,8 @@
-import { User, PracticeSession, PracticeAnalysis, UserRole, SessionStatus } from '@prisma/client'
+import { User, PracticeSession, PracticeAnalysis } from '@prisma/client'
+
+// Define role and status types manually since Prisma uses String instead of enums
+export type UserRole = 'TEACHER' | 'STUDENT'
+export type SessionStatus = 'RECORDING' | 'COMPLETED' | 'ANALYZED'
 
 // Extended types with relations
 export type UserWithStudents = User & {
@@ -87,5 +91,4 @@ export interface StudentStats {
   practiceSuggestions?: string
 }
 
-// Export Prisma enums
-export { UserRole, SessionStatus }
+// UserRole and SessionStatus are defined above as string literal types
