@@ -35,13 +35,12 @@ input[type="email"],
 input[type="password"],
 textarea,
 select {
-  color: #FFFFFF !important;
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  color: #1F2937 !important; /* Dark gray/black text for visibility */
+  background-color: #FFFFFF !important; /* White background */
+  border: 1px solid #D1D5DB !important; /* Light gray border */
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
 }
 
 input[type="text"]:focus,
@@ -50,14 +49,14 @@ input[type="password"]:focus,
 textarea:focus,
 select:focus {
   outline: none !important;
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  border-color: #8B5CF6 !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1) !important;
+  background-color: #FFFFFF !important;
+  border-color: #6366F1 !important; /* Indigo border on focus */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4) !important;
+  color: #9CA3AF !important; /* Medium gray for placeholders */
 }
 
 /* Modern button styles */
