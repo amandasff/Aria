@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const jwtToken = generateToken({
       userId: updatedUser.id,
       email: updatedUser.email,
-      role: updatedUser.role,
+      role: updatedUser.role as 'TEACHER' | 'STUDENT',
     })
 
     // Create response
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
           id: updatedUser.id,
           email: updatedUser.email,
           name: updatedUser.name,
-          role: updatedUser.role,
+          role: updatedUser.role as 'TEACHER' | 'STUDENT',
         },
         token: jwtToken,
       },
