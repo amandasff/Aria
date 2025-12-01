@@ -325,7 +325,7 @@ export default function TeacherDashboard() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
+          <div className="flex justify-between h-14 items-center">
             <div className="flex items-center gap-8">
               <Link href="/" className="text-xl font-semibold text-gray-900 tracking-tight">
                 MusicPractice
@@ -345,75 +345,75 @@ export default function TeacherDashboard() {
         </div>
       </nav>
 
-      <div className="pt-20 pb-12">
+      <div className="pt-16 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
-              <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-shadow">
+              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
                 {students.length}
               </div>
-              <div className="text-gray-600 font-medium">Total Students</div>
+              <div className="text-sm text-gray-600 font-medium">Total Students</div>
             </div>
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
-              <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-shadow">
+              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
                 {sessions.length}
               </div>
-              <div className="text-gray-600 font-medium">Total Sessions</div>
+              <div className="text-sm text-gray-600 font-medium">Total Sessions</div>
             </div>
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
-              <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-shadow">
+              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
                 {Math.floor(sessions.reduce((acc, s) => acc + s.duration, 0) / 60)}
               </div>
-              <div className="text-gray-600 font-medium">Minutes Practiced</div>
+              <div className="text-sm text-gray-600 font-medium">Minutes Practiced</div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Students Section */}
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-xl overflow-hidden">
-              <div className="p-8 border-b border-gray-100 flex justify-between items-center">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-xl overflow-hidden">
+              <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
                   Students
                 </h2>
                 <button
                   onClick={() => setShowInviteModal(true)}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all"
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-[1.01] transition-all"
                 >
                   Invite Student
                 </button>
               </div>
-              <div className="p-8">
+              <div className="p-4">
                 {students.length === 0 ? (
                   <p className="text-gray-500 text-center py-12 font-medium">
                     No students yet. Invite your first student!
                   </p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {students.map((student) => (
-                      <div key={student.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all">
+                      <div key={student.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-lg p-4 hover:shadow-lg transition-all">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <button
                               onClick={() => handleViewStudent(student.id)}
                               className="text-left w-full"
                             >
-                              <h3 className="font-bold text-gray-900 text-lg mb-1 hover:text-indigo-600 transition-colors">
+                              <h3 className="font-bold text-gray-900 text-base mb-1 hover:text-indigo-600 transition-colors">
                                 {student.name}
                               </h3>
-                              <p className="text-sm text-gray-600 mb-2">
+                              <p className="text-xs text-gray-600 mb-2">
                                 {student.email}
                               </p>
                             </button>
                             {student.inviteToken && (
-                              <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-lg">
+                              <span className="inline-block px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">
                                 Pending Invitation
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
                             <div className="text-right">
-                              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                              <div className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                                 {student._count.practiceSessions}
                               </div>
                               <div className="text-xs text-gray-600 font-medium">sessions</div>
@@ -445,8 +445,8 @@ export default function TeacherDashboard() {
             </div>
 
             {/* Recent Sessions */}
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-xl overflow-hidden">
-              <div className="p-8 border-b border-gray-100">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-xl overflow-hidden">
+              <div className="p-4 border-b border-gray-100">
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
                   Recent Practice Sessions
                 </h2>
@@ -649,14 +649,14 @@ export default function TeacherDashboard() {
       {/* Session Detail Modal */}
       {selectedSession && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto border border-gray-100 shadow-2xl">
-            <div className="flex justify-between items-start mb-6">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+          <div className="bg-white/95 backdrop-blur-md rounded-xl max-w-2xl w-full p-6 max-h-[85vh] overflow-y-auto border border-gray-100 shadow-2xl">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
                 {selectedSession.title}
               </h2>
               <button
                 onClick={() => setSelectedSession(null)}
-                className="text-gray-500 hover:text-gray-900 text-3xl font-light transition-colors"
+                className="text-gray-500 hover:text-gray-900 text-2xl font-light transition-colors"
               >
                 ×
               </button>
@@ -784,9 +784,9 @@ export default function TeacherDashboard() {
       {/* Feedback Modal */}
       {showFeedbackModal && selectedSession && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-2xl w-full p-8 border border-gray-100 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-6">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+          <div className="bg-white/95 backdrop-blur-md rounded-xl max-w-2xl w-full p-6 border border-gray-100 shadow-2xl max-h-[85vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
                 Provide Feedback
               </h2>
               <button
@@ -795,13 +795,13 @@ export default function TeacherDashboard() {
                   setFeedbackText('')
                   setFeedbackAudio(null)
                 }}
-                className="text-gray-500 hover:text-gray-900 text-3xl font-light transition-colors"
+                className="text-gray-500 hover:text-gray-900 text-2xl font-light transition-colors"
               >
                 ×
               </button>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-900 mb-2">
                   Text Feedback

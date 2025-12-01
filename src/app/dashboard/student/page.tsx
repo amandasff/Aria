@@ -201,7 +201,7 @@ export default function StudentDashboard() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
+          <div className="flex justify-between h-14 items-center">
             <div className="flex items-center gap-8">
               <Link href="/" className="text-xl font-semibold text-gray-900 tracking-tight">
                 MusicPractice
@@ -221,45 +221,45 @@ export default function StudentDashboard() {
         </div>
       </nav>
 
-      <div className="pt-20 pb-12">
+      <div className="pt-16 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <button
               onClick={() => setShowStreakCalendar(true)}
-              className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer text-left"
+              className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-all hover:scale-[1.01] cursor-pointer text-left"
             >
-              <div className="text-5xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
+              <div className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent mb-1">
                 {streak}
               </div>
-              <div className="text-gray-600 font-medium">Day Streak 🔥</div>
+              <div className="text-sm text-gray-600 font-medium">Day Streak 🔥</div>
             </button>
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
-              <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-shadow">
+              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
                 {sessions.length}
               </div>
-              <div className="text-gray-600 font-medium">Total Sessions</div>
+              <div className="text-sm text-gray-600 font-medium">Total Sessions</div>
             </div>
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
-              <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-shadow">
+              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
                 {Math.floor(sessions.reduce((acc, s) => acc + s.duration, 0) / 60)}
               </div>
-              <div className="text-gray-600 font-medium">Total Minutes</div>
+              <div className="text-sm text-gray-600 font-medium">Total Minutes</div>
             </div>
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
-              <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-shadow">
+              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
                 {sessions.filter(s => s.analysis).length}
               </div>
-              <div className="text-gray-600 font-medium">Analyzed Sessions</div>
+              <div className="text-sm text-gray-600 font-medium">Analyzed Sessions</div>
             </div>
           </div>
 
           {/* Record Practice Button */}
           {!showRecorder && (
-            <div className="mb-12 text-center">
+            <div className="mb-6 text-center">
               <button
                 onClick={() => setShowRecorder(true)}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-10 py-5 rounded-2xl text-lg font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all"
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-[1.01] transition-all"
               >
                 🎵 Start New Practice Session
               </button>
@@ -268,12 +268,12 @@ export default function StudentDashboard() {
 
           {/* Recording Interface */}
           {showRecorder && (
-            <div className="mb-12 bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-xl p-8">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-8">
+            <div className="mb-6 bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-xl p-6">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-4">
                 Record Practice Session
               </h2>
 
-              <div className="space-y-6 mb-8">
+              <div className="space-y-4 mb-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-900 mb-2">
                     Session Title *
@@ -305,21 +305,21 @@ export default function StudentDashboard() {
               <AudioRecorder onRecordingComplete={handleRecordingComplete} />
 
               {recordedAudio && (
-                <div className="mt-8 bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-xl p-6">
-                  <p className="text-green-800 font-semibold mb-4">
+                <div className="mt-4 bg-green-50/80 backdrop-blur-sm border border-green-200 rounded-xl p-4">
+                  <p className="text-sm text-green-800 font-semibold mb-3">
                     Recording complete! Duration: {formatDuration(recordedAudio.duration)}
                   </p>
-                  <div className="flex gap-3">
+                  <div className="flex gap-2">
                     <button
                       onClick={handleSaveSession}
                       disabled={uploading}
-                      className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25"
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25"
                     >
                       {uploading ? 'Saving...' : 'Save Session'}
                     </button>
                     <button
                       onClick={() => setRecordedAudio(null)}
-                      className="bg-gray-200 text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+                      className="bg-gray-200 text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-all"
                     >
                       Re-record
                     </button>
@@ -330,7 +330,7 @@ export default function StudentDashboard() {
                         setSessionTitle('')
                         setSessionDescription('')
                       }}
-                      className="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 transition-all"
+                      className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition-all"
                     >
                       Cancel
                     </button>
@@ -341,13 +341,13 @@ export default function StudentDashboard() {
           )}
 
           {/* Practice History */}
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-xl overflow-hidden">
-            <div className="p-8 border-b border-gray-100">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+          <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-xl overflow-hidden">
+            <div className="p-4 border-b border-gray-100">
+              <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
                 Practice History
               </h2>
             </div>
-            <div className="p-8">
+            <div className="p-4">
               {sessions.length === 0 ? (
                 <p className="text-gray-500 text-center py-12 font-medium">
                   No practice sessions yet. Start your first session above!
@@ -355,11 +355,11 @@ export default function StudentDashboard() {
               ) : (
                 <div className="space-y-4">
                   {sessions.map((session) => (
-                    <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all">
-                      <div className="flex justify-between items-start mb-4">
+                    <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-lg p-4 hover:shadow-lg transition-all">
+                      <div className="flex justify-between items-start mb-3">
                         <div>
-                          <h3 className="font-bold text-gray-900 text-xl mb-1">{session.title}</h3>
-                          <p className="text-sm text-gray-600">
+                          <h3 className="font-bold text-gray-900 text-base mb-1">{session.title}</h3>
+                          <p className="text-xs text-gray-600">
                             {new Date(session.createdAt).toLocaleDateString()} • {formatDuration(session.duration)}
                           </p>
                         </div>
@@ -367,7 +367,7 @@ export default function StudentDashboard() {
                           {session.analysis ? (
                             <button
                               onClick={() => setSelectedSession(session)}
-                              className="px-4 py-2 bg-green-100 text-green-800 text-sm font-semibold rounded-xl hover:bg-green-200 transition-all"
+                              className="px-3 py-1.5 bg-green-100 text-green-800 text-xs font-semibold rounded-lg hover:bg-green-200 transition-all"
                             >
                               View Analysis
                             </button>
@@ -375,7 +375,7 @@ export default function StudentDashboard() {
                             <button
                               onClick={() => handleAnalyzeSession(session.id)}
                               disabled={analyzing === session.id}
-                              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25"
+                              className="px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25"
                             >
                               {analyzing === session.id ? 'Analyzing...' : 'Get AI Feedback'}
                             </button>
@@ -387,8 +387,8 @@ export default function StudentDashboard() {
 
                       {/* Teacher Feedback */}
                       {(session.teacherFeedback || session.teacherFeedbackAudio) && (
-                        <div className="mt-4 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                          <p className="text-sm font-semibold text-indigo-900 mb-2">💬 Teacher Feedback:</p>
+                        <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                          <p className="text-xs font-semibold text-indigo-900 mb-2">💬 Teacher Feedback:</p>
                           {session.teacherFeedback && (
                             <p className="text-gray-700 whitespace-pre-wrap mb-3">{session.teacherFeedback}</p>
                           )}
@@ -419,23 +419,23 @@ export default function StudentDashboard() {
       {/* Analysis Modal */}
       {selectedSession && selectedSession.analysis && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-3xl w-full p-8 max-h-[90vh] overflow-y-auto border border-gray-100 shadow-2xl">
-            <div className="flex justify-between items-start mb-6">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+          <div className="bg-white/95 backdrop-blur-md rounded-xl max-w-2xl w-full p-6 max-h-[85vh] overflow-y-auto border border-gray-100 shadow-2xl">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
                 AI Practice Analysis
               </h2>
               <button
                 onClick={() => setSelectedSession(null)}
-                className="text-gray-500 hover:text-gray-900 text-3xl font-light transition-colors"
+                className="text-gray-500 hover:text-gray-900 text-2xl font-light transition-colors"
               >
                 ×
               </button>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Overall Score</h3>
-                <div className="text-6xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <h3 className="text-base font-semibold text-gray-900 mb-2">Overall Score</h3>
+                <div className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   {selectedSession.analysis.overallScore}/10
                 </div>
               </div>
@@ -522,17 +522,17 @@ export default function StudentDashboard() {
       {/* Streak Calendar Modal */}
       {showStreakCalendar && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-4xl w-full p-8 border border-gray-100 shadow-2xl">
-            <div className="flex justify-between items-start mb-6">
+          <div className="bg-white/95 backdrop-blur-md rounded-xl max-w-3xl w-full p-6 border border-gray-100 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-2">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-1">
                   Practice Calendar
                 </h2>
-                <p className="text-gray-600">Your {streak} day streak 🔥</p>
+                <p className="text-sm text-gray-600">Your {streak} day streak 🔥</p>
               </div>
               <button
                 onClick={() => setShowStreakCalendar(false)}
-                className="text-gray-500 hover:text-gray-900 text-3xl font-light transition-colors"
+                className="text-gray-500 hover:text-gray-900 text-2xl font-light transition-colors"
               >
                 ×
               </button>
@@ -614,34 +614,34 @@ function PracticeCalendar({ sessions }: { sessions: Session[] }) {
   return (
     <div>
       {/* Month Navigation */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <button
           onClick={() => navigateMonth(-1)}
-          className="px-4 py-2 bg-gray-100 text-gray-900 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+          className="px-3 py-1.5 bg-gray-100 text-gray-900 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-all"
         >
           ← Previous
         </button>
-        <h3 className="text-2xl font-bold text-gray-900">
+        <h3 className="text-xl font-bold text-gray-900">
           {monthNames[currentMonth]} {currentYear}
         </h3>
         <button
           onClick={() => navigateMonth(1)}
-          className="px-4 py-2 bg-gray-100 text-gray-900 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+          className="px-3 py-1.5 bg-gray-100 text-gray-900 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-all"
         >
           Next →
         </button>
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2 mb-4">
+      <div className="grid grid-cols-7 gap-1.5 mb-3">
         {dayNames.map(day => (
-          <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
+          <div key={day} className="text-center text-xs font-semibold text-gray-600 py-1">
             {day}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1.5">
         {days.map((date, index) => {
           if (!date) {
             return <div key={`empty-${index}`} className="aspect-square" />
@@ -655,7 +655,7 @@ function PracticeCalendar({ sessions }: { sessions: Session[] }) {
           return (
             <div
               key={dateKey}
-              className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-1 transition-all ${
+              className={`aspect-square rounded-lg border-2 flex flex-col items-center justify-center p-0.5 transition-all ${
                 isToday
                   ? 'border-indigo-600 bg-indigo-50'
                   : hasPractice
@@ -664,12 +664,12 @@ function PracticeCalendar({ sessions }: { sessions: Session[] }) {
               }`}
               title={hasPractice ? `${daySessions.length} session(s) on ${date.toLocaleDateString()}` : ''}
             >
-              <div className={`text-sm font-semibold ${isToday ? 'text-indigo-600' : hasPractice ? 'text-green-700' : 'text-gray-500'}`}>
+              <div className={`text-xs font-semibold ${isToday ? 'text-indigo-600' : hasPractice ? 'text-green-700' : 'text-gray-500'}`}>
                 {date.getDate()}
               </div>
               {hasPractice && (
-                <div className="text-xs text-green-700 font-medium mt-1">
-                  {daySessions.length} {daySessions.length === 1 ? 'session' : 'sessions'}
+                <div className="text-[10px] text-green-700 font-medium mt-0.5">
+                  {daySessions.length}
                 </div>
               )}
             </div>
@@ -678,7 +678,7 @@ function PracticeCalendar({ sessions }: { sessions: Session[] }) {
       </div>
 
       {/* Legend */}
-      <div className="mt-6 flex items-center justify-center gap-6 text-sm">
+      <div className="mt-4 flex items-center justify-center gap-4 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded border-2 border-green-500 bg-green-50"></div>
           <span className="text-gray-600">Practice Day</span>
