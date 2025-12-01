@@ -41,6 +41,7 @@ export async function GET(
     }
 
     // Get all sessions for this student
+    // Explicitly select fields to avoid issues if migration hasn't run yet
     const sessions = await prisma.practiceSession.findMany({
       where: { studentId },
       select: {
@@ -50,9 +51,8 @@ export async function GET(
         duration: true,
         createdAt: true,
         status: true,
-        teacherFeedback: true,
-        teacherFeedbackAudio: true,
-        teacherFeedbackAt: true,
+        audioFilePath: true,
+        audioFileSize: true,
         student: {
           select: {
             id: true,
@@ -61,6 +61,10 @@ export async function GET(
           },
         },
         analysis: true,
+        // These fields may not exist if migration hasn't run - Prisma will handle gracefully
+        teacherFeedback: true,
+        teacherFeedbackAudio: true,
+        teacherFeedbackAt: true,
       },
       orderBy: { createdAt: 'desc' },
     })
@@ -136,11 +140,23 @@ export async function GET(
         sessions,
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get student stats error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    
+    // Check if it's a Prisma error about missing columns
+    if (error?.code === 'P2021' || error?.message?.includes('column') || error?.message?.includes('does not exist')) {
+      return NextResponse.json<ApiResponse>({
+        success: false,
+        error: 'Database migration required. Please run: npx prisma migrate deploy',
+      }, { status: 500 })
+    }
+    
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' 
+        ? `Internal server error: ${errorMessage}` 
+        : 'Internal server error. Please check server logs.',
     }, { status: 500 })
   }
 }
