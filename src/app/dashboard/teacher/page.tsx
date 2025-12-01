@@ -453,15 +453,18 @@ export default function TeacherDashboard() {
                     {sessions.slice(0, 10).map((session) => (
                       <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all">
                         <div className="flex justify-between items-start mb-4">
-                          <div>
+                          <div className="flex-1">
                             <h3 className="font-bold text-gray-900 text-lg mb-1">
                               {session.title}
                             </h3>
                             <p className="text-sm text-gray-600">
                               {session.student.name}
                             </p>
+                            {session.description && (
+                              <p className="text-xs text-gray-500 mt-2 italic line-clamp-2">{session.description}</p>
+                            )}
                           </div>
-                          <span className="text-sm text-gray-600 font-medium">
+                          <span className="text-sm text-gray-600 font-medium ml-2">
                             {formatDuration(session.duration)}
                           </span>
                         </div>
@@ -570,35 +573,45 @@ export default function TeacherDashboard() {
                   {selectedStudent.sessions.map((session) => (
                     <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4 hover:shadow-lg transition-all">
                       <div className="flex justify-between items-start mb-3">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-bold text-gray-900">{session.title}</h4>
                           <p className="text-sm text-gray-600">
                             {new Date(session.createdAt).toLocaleDateString()} • {formatDuration(session.duration)}
                           </p>
+                          {session.description && (
+                            <p className="text-xs text-gray-500 mt-2 italic line-clamp-2">{session.description}</p>
+                          )}
                         </div>
                         {session.analysis ? (
-                          <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-lg">
+                          <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-lg ml-2">
                             Analyzed
                           </span>
                         ) : (
                           <button
                             onClick={() => handleAnalyze(session.id)}
                             disabled={analyzing === session.id}
-                            className="px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all"
+                            className="px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all ml-2"
                           >
                             {analyzing === session.id ? 'Analyzing...' : 'Analyze'}
                           </button>
                         )}
                       </div>
-                      <button
-                        onClick={() => {
-                          setSelectedSession(session)
-                          setSelectedStudent(null)
-                        }}
-                        className="w-full bg-gray-100 text-gray-900 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-all"
-                      >
-                        Listen to Recording
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedSession(session)
+                            setSelectedStudent(null)
+                          }}
+                          className="flex-1 bg-gray-100 text-gray-900 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-all"
+                        >
+                          Listen to Recording
+                        </button>
+                        {(session.teacherFeedback || session.teacherFeedbackAudio) && (
+                          <span className="px-3 py-2 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded-lg flex items-center">
+                            💬 Feedback
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

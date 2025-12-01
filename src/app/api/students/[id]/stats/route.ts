@@ -43,7 +43,16 @@ export async function GET(
     // Get all sessions for this student
     const sessions = await prisma.practiceSession.findMany({
       where: { studentId },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        duration: true,
+        createdAt: true,
+        status: true,
+        teacherFeedback: true,
+        teacherFeedbackAudio: true,
+        teacherFeedbackAt: true,
         student: {
           select: {
             id: true,
