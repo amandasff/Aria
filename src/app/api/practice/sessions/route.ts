@@ -3,6 +3,7 @@ import { z } from 'zod'
 import prisma from '@/lib/prisma'
 import { getUserFromRequest } from '@/lib/auth'
 import { ApiResponse } from '@/types'
+import { put } from '@vercel/blob'
 import fs from 'fs/promises'
 import path from 'path'
 
@@ -50,34 +51,45 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Create directory for user's audio files
-    const uploadDir = path.join(
-      process.cwd(),
-      'uploads',
-      'audio',
-      tokenPayload.userId,
-      session.id
-    )
-    await fs.mkdir(uploadDir, { recursive: true })
+    // Convert base64 to buffer
+    const audioBuffer = Buffer.from(audioData.split(',')[1] || audioData, 'base64')
+    const fileSize = audioBuffer.length
 
     // Determine file extension
     const ext = path.extname(fileName) || '.webm'
-    const audioFilePath = path.join(uploadDir, `recording${ext}`)
+    const blobFileName = `audio/${tokenPayload.userId}/${session.id}/recording${ext}`
 
-    // Save audio file
-    const audioBuffer = Buffer.from(audioData.split(',')[1] || audioData, 'base64')
-    await fs.writeFile(audioFilePath, audioBuffer)
+    let audioFilePath: string
+    let audioFileSize: number = fileSize
 
-    // Get file size
-    const stats = await fs.stat(audioFilePath)
-    const fileSize = stats.size
+    // Use Vercel Blob Storage in production, filesystem in development
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      // Upload to Vercel Blob Storage
+      const blob = await put(blobFileName, audioBuffer, {
+        access: 'public',
+        contentType: `audio/${ext.slice(1)}`,
+      })
+      audioFilePath = blob.url
+    } else {
+      // Fallback to filesystem for local development
+      const uploadDir = path.join(
+        process.cwd(),
+        'uploads',
+        'audio',
+        tokenPayload.userId,
+        session.id
+      )
+      await fs.mkdir(uploadDir, { recursive: true })
+      audioFilePath = path.join(uploadDir, `recording${ext}`)
+      await fs.writeFile(audioFilePath, audioBuffer)
+    }
 
     // Update session with file path
     const updatedSession = await prisma.practiceSession.update({
       where: { id: session.id },
       data: {
         audioFilePath: audioFilePath,
-        audioFileSize: fileSize,
+        audioFileSize: audioFileSize,
       },
       include: {
         student: {

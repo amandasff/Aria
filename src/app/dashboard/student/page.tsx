@@ -28,6 +28,7 @@ export default function StudentDashboard() {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [analyzing, setAnalyzing] = useState<string | null>(null)
   const [streak, setStreak] = useState(0)
+  const [showStreakCalendar, setShowStreakCalendar] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -220,12 +221,15 @@ export default function StudentDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
+            <button
+              onClick={() => setShowStreakCalendar(true)}
+              className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer text-left"
+            >
               <div className="text-5xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
                 {streak}
               </div>
               <div className="text-gray-600 font-medium">Day Streak 🔥</div>
-            </div>
+            </button>
             <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
               <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
                 {sessions.length}
@@ -460,6 +464,176 @@ export default function StudentDashboard() {
           </div>
         </div>
       )}
+
+      {/* Streak Calendar Modal */}
+      {showStreakCalendar && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-4xl w-full p-8 border border-gray-100 shadow-2xl">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-2">
+                  Practice Calendar
+                </h2>
+                <p className="text-gray-600">Your {streak} day streak 🔥</p>
+              </div>
+              <button
+                onClick={() => setShowStreakCalendar(false)}
+                className="text-gray-500 hover:text-gray-900 text-3xl font-light transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            <PracticeCalendar sessions={sessions} />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Practice Calendar Component
+function PracticeCalendar({ sessions }: { sessions: Session[] }) {
+  // Group sessions by date
+  const sessionsByDate = new Map<string, Session[]>()
+  sessions.forEach(session => {
+    const date = new Date(session.createdAt)
+    date.setHours(0, 0, 0, 0)
+    const dateKey = date.toISOString().split('T')[0]
+    if (!sessionsByDate.has(dateKey)) {
+      sessionsByDate.set(dateKey, [])
+    }
+    sessionsByDate.get(dateKey)!.push(session)
+  })
+
+  // Get current month and year
+  const now = new Date()
+  const [currentMonth, setCurrentMonth] = useState(now.getMonth())
+  const [currentYear, setCurrentYear] = useState(now.getFullYear())
+
+  // Get first day of month and number of days
+  const firstDay = new Date(currentYear, currentMonth, 1)
+  const lastDay = new Date(currentYear, currentMonth + 1, 0)
+  const daysInMonth = lastDay.getDate()
+  const startingDayOfWeek = firstDay.getDay()
+
+  // Generate calendar days
+  const days: (Date | null)[] = []
+  
+  // Add empty cells for days before month starts
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    days.push(null)
+  }
+  
+  // Add days of the month
+  for (let day = 1; day <= daysInMonth; day++) {
+    days.push(new Date(currentYear, currentMonth, day))
+  }
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  const navigateMonth = (direction: number) => {
+    if (direction === -1) {
+      if (currentMonth === 0) {
+        setCurrentMonth(11)
+        setCurrentYear(currentYear - 1)
+      } else {
+        setCurrentMonth(currentMonth - 1)
+      }
+    } else {
+      if (currentMonth === 11) {
+        setCurrentMonth(0)
+        setCurrentYear(currentYear + 1)
+      } else {
+        setCurrentMonth(currentMonth + 1)
+      }
+    }
+  }
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  return (
+    <div>
+      {/* Month Navigation */}
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={() => navigateMonth(-1)}
+          className="px-4 py-2 bg-gray-100 text-gray-900 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+        >
+          ← Previous
+        </button>
+        <h3 className="text-2xl font-bold text-gray-900">
+          {monthNames[currentMonth]} {currentYear}
+        </h3>
+        <button
+          onClick={() => navigateMonth(1)}
+          className="px-4 py-2 bg-gray-100 text-gray-900 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+        >
+          Next →
+        </button>
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 gap-2 mb-4">
+        {dayNames.map(day => (
+          <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
+            {day}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-2">
+        {days.map((date, index) => {
+          if (!date) {
+            return <div key={`empty-${index}`} className="aspect-square" />
+          }
+
+          const dateKey = date.toISOString().split('T')[0]
+          const daySessions = sessionsByDate.get(dateKey) || []
+          const hasPractice = daySessions.length > 0
+          const isToday = dateKey === new Date().toISOString().split('T')[0]
+
+          return (
+            <div
+              key={dateKey}
+              className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-1 transition-all ${
+                isToday
+                  ? 'border-indigo-600 bg-indigo-50'
+                  : hasPractice
+                  ? 'border-green-500 bg-green-50 hover:bg-green-100'
+                  : 'border-gray-200 bg-gray-50'
+              }`}
+              title={hasPractice ? `${daySessions.length} session(s) on ${date.toLocaleDateString()}` : ''}
+            >
+              <div className={`text-sm font-semibold ${isToday ? 'text-indigo-600' : hasPractice ? 'text-green-700' : 'text-gray-500'}`}>
+                {date.getDate()}
+              </div>
+              {hasPractice && (
+                <div className="text-xs text-green-700 font-medium mt-1">
+                  {daySessions.length} {daySessions.length === 1 ? 'session' : 'sessions'}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Legend */}
+      <div className="mt-6 flex items-center justify-center gap-6 text-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded border-2 border-green-500 bg-green-50"></div>
+          <span className="text-gray-600">Practice Day</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded border-2 border-indigo-600 bg-indigo-50"></div>
+          <span className="text-gray-600">Today</span>
+        </div>
+      </div>
     </div>
   )
 }
