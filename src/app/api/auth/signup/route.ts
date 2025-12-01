@@ -84,9 +84,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Signup error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    // Show actual error in production for debugging (remove after fixing)
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: process.env.NODE_ENV === 'development' ? errorMessage : 'Internal server error',
+      error: errorMessage,
     }, { status: 500 })
   }
 }
