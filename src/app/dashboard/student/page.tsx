@@ -9,10 +9,14 @@ import AudioPlayer from '@/components/AudioPlayer'
 interface Session {
   id: string
   title: string
+  description?: string
   duration: number
   createdAt: string
   status: string
   analysis: any
+  teacherFeedback?: string
+  teacherFeedbackAudio?: string
+  teacherFeedbackAt?: string
 }
 
 export default function StudentDashboard() {
@@ -380,6 +384,29 @@ export default function StudentDashboard() {
                       </div>
 
                       <AudioPlayer audioUrl={`/api/practice/sessions/${session.id}/audio`} />
+
+                      {/* Teacher Feedback */}
+                      {(session.teacherFeedback || session.teacherFeedbackAudio) && (
+                        <div className="mt-4 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+                          <p className="text-sm font-semibold text-indigo-900 mb-2">💬 Teacher Feedback:</p>
+                          {session.teacherFeedback && (
+                            <p className="text-gray-700 whitespace-pre-wrap mb-3">{session.teacherFeedback}</p>
+                          )}
+                          {session.teacherFeedbackAudio && (
+                            <div className="mt-2">
+                              <AudioPlayer
+                                audioUrl={session.teacherFeedbackAudio}
+                                title="Teacher Feedback"
+                              />
+                            </div>
+                          )}
+                          {session.teacherFeedbackAt && (
+                            <p className="text-xs text-gray-500 mt-2">
+                              {new Date(session.teacherFeedbackAt).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -454,6 +481,33 @@ export default function StudentDashboard() {
                 </div>
               )}
             </div>
+
+            {/* Teacher Feedback in Analysis Modal */}
+            {(selectedSession.teacherFeedback || selectedSession.teacherFeedbackAudio) && (
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                  💬 Teacher Feedback
+                </h3>
+                {selectedSession.teacherFeedback && (
+                  <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200 mb-4">
+                    <p className="text-gray-700 whitespace-pre-wrap">{selectedSession.teacherFeedback}</p>
+                  </div>
+                )}
+                {selectedSession.teacherFeedbackAudio && (
+                  <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+                    <AudioPlayer
+                      audioUrl={selectedSession.teacherFeedbackAudio}
+                      title="Teacher Feedback"
+                    />
+                  </div>
+                )}
+                {selectedSession.teacherFeedbackAt && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {new Date(selectedSession.teacherFeedbackAt).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            )}
 
             <button
               onClick={() => setSelectedSession(null)}

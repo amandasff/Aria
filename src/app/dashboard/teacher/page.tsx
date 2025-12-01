@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AudioPlayer from '@/components/AudioPlayer'
+import AudioRecorder from '@/components/AudioRecorder'
 
 interface Student {
   id: string
@@ -19,6 +20,7 @@ interface Student {
 interface Session {
   id: string
   title: string
+  description?: string
   duration: number
   createdAt: string
   status: string
@@ -28,6 +30,9 @@ interface Session {
     email: string
   }
   analysis: any
+  teacherFeedback?: string
+  teacherFeedbackAudio?: string
+  teacherFeedbackAt?: string
 }
 
 interface StudentStats {
@@ -63,6 +68,11 @@ export default function TeacherDashboard() {
   const [loadingStudentStats, setLoadingStudentStats] = useState(false)
   const [deletingStudent, setDeletingStudent] = useState<string | null>(null)
   const [analyzing, setAnalyzing] = useState<string | null>(null)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [feedbackText, setFeedbackText] = useState('')
+  const [feedbackAudio, setFeedbackAudio] = useState<{blob: Blob, duration: number} | null>(null)
+  const [recordingFeedback, setRecordingFeedback] = useState(false)
+  const [savingFeedback, setSavingFeedback] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -204,6 +214,82 @@ export default function TeacherDashboard() {
       alert('Error analyzing session')
     } finally {
       setAnalyzing(null)
+    }
+  }
+
+  const handleFeedbackRecordingComplete = (blob: Blob, duration: number) => {
+    setFeedbackAudio({ blob, duration })
+    setRecordingFeedback(false)
+  }
+
+  const handleSaveFeedback = async () => {
+    if (!selectedSession) return
+    if (!feedbackText.trim() && !feedbackAudio) {
+      alert('Please provide text feedback or record audio feedback')
+      return
+    }
+
+    setSavingFeedback(true)
+    try {
+      const token = localStorage.getItem('token')
+      let audioData = null
+
+      if (feedbackAudio) {
+        // Convert blob to base64
+        audioData = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            if (reader.result && typeof reader.result === 'string') {
+              resolve(reader.result)
+            } else {
+              reject(new Error('Failed to convert audio to base64'))
+            }
+          }
+          reader.onerror = () => {
+            reject(new Error('Error reading audio file'))
+          }
+          reader.readAsDataURL(feedbackAudio.blob)
+        })
+      }
+
+      const response = await fetch(`/api/practice/sessions/${selectedSession.id}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          feedback: feedbackText.trim() || null,
+          audioData: audioData,
+          fileName: feedbackAudio ? 'teacher-feedback.webm' : null,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        alert('Feedback saved successfully!')
+        setShowFeedbackModal(false)
+        setFeedbackText('')
+        setFeedbackAudio(null)
+        fetchData()
+        // Refresh student stats if viewing a student
+        if (selectedStudent) {
+          handleViewStudent(selectedStudent.student.id)
+        }
+        // Refresh selected session
+        const updatedSession = sessions.find(s => s.id === selectedSession.id)
+        if (updatedSession) {
+          setSelectedSession(updatedSession)
+        }
+      } else {
+        alert(data.error || 'Failed to save feedback')
+      }
+    } catch (error) {
+      console.error('Error saving feedback:', error)
+      alert(`Error saving feedback: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setSavingFeedback(false)
     }
   }
 
@@ -552,6 +638,12 @@ export default function TeacherDashboard() {
               <p className="text-gray-700">
                 <span className="font-semibold">Duration:</span> {formatDuration(selectedSession.duration)}
               </p>
+              {selectedSession.description && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <p className="text-sm font-semibold text-blue-900 mb-2">Student Notes:</p>
+                  <p className="text-gray-700 whitespace-pre-wrap">{selectedSession.description}</p>
+                </div>
+              )}
             </div>
 
             {/* Audio Player */}
@@ -603,12 +695,153 @@ export default function TeacherDashboard() {
               </div>
             )}
 
+            {/* Teacher Feedback Section */}
+            <div className="mt-6 space-y-4 pt-6 border-t border-gray-200">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                  Your Feedback
+                </h3>
+                <button
+                  onClick={() => {
+                    setFeedbackText(selectedSession.teacherFeedback || '')
+                    setFeedbackAudio(null)
+                    setShowFeedbackModal(true)
+                  }}
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
+                >
+                  {selectedSession.teacherFeedback || selectedSession.teacherFeedbackAudio ? 'Edit Feedback' : 'Add Feedback'}
+                </button>
+              </div>
+
+              {selectedSession.teacherFeedback && (
+                <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+                  <p className="text-sm font-semibold text-green-900 mb-2">Your Text Feedback:</p>
+                  <p className="text-gray-700 whitespace-pre-wrap">{selectedSession.teacherFeedback}</p>
+                  {selectedSession.teacherFeedbackAt && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      {new Date(selectedSession.teacherFeedbackAt).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {selectedSession.teacherFeedbackAudio && (
+                <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+                  <p className="text-sm font-semibold text-green-900 mb-2">Your Audio Feedback:</p>
+                  <AudioPlayer
+                    audioUrl={selectedSession.teacherFeedbackAudio}
+                    title="Teacher Feedback"
+                  />
+                </div>
+              )}
+
+              {!selectedSession.teacherFeedback && !selectedSession.teacherFeedbackAudio && (
+                <p className="text-gray-500 text-sm italic">No feedback provided yet</p>
+              )}
+            </div>
+
             <button
               onClick={() => setSelectedSession(null)}
               className="mt-8 w-full bg-gray-200 text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all"
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Modal */}
+      {showFeedbackModal && selectedSession && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-2xl w-full p-8 border border-gray-100 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                Provide Feedback
+              </h2>
+              <button
+                onClick={() => {
+                  setShowFeedbackModal(false)
+                  setFeedbackText('')
+                  setFeedbackAudio(null)
+                }}
+                className="text-gray-500 hover:text-gray-900 text-3xl font-light transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Text Feedback
+                </label>
+                <textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                  rows={6}
+                  placeholder="Write your feedback for the student..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Audio Feedback (Optional)
+                </label>
+                {!recordingFeedback && !feedbackAudio && (
+                  <button
+                    onClick={() => setRecordingFeedback(true)}
+                    className="w-full px-4 py-3 bg-gray-100 text-gray-900 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+                  >
+                    🎤 Record Audio Feedback
+                  </button>
+                )}
+                {recordingFeedback && (
+                  <div className="p-4 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl">
+                    <AudioRecorder onRecordingComplete={handleFeedbackRecordingComplete} />
+                    <button
+                      onClick={() => setRecordingFeedback(false)}
+                      className="mt-4 w-full px-4 py-2 bg-gray-200 text-gray-900 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+                    >
+                      Cancel Recording
+                    </button>
+                  </div>
+                )}
+                {feedbackAudio && (
+                  <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+                    <p className="text-sm font-semibold text-green-900 mb-2">
+                      Audio recorded ({formatDuration(feedbackAudio.duration)})
+                    </p>
+                    <button
+                      onClick={() => setFeedbackAudio(null)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-all text-sm"
+                    >
+                      Re-record
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveFeedback}
+                  disabled={savingFeedback || (!feedbackText.trim() && !feedbackAudio)}
+                  className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25"
+                >
+                  {savingFeedback ? 'Saving...' : 'Save Feedback'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowFeedbackModal(false)
+                    setFeedbackText('')
+                    setFeedbackAudio(null)
+                  }}
+                  className="flex-1 bg-gray-200 text-gray-900 py-3 px-4 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

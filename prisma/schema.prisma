@@ -52,6 +52,11 @@ model PracticeSession {
   audioFilePath String        // Path to stored audio file
   audioFileSize Int?          // File size in bytes
   status        String        @default("COMPLETED") // "RECORDING", "COMPLETED", or "ANALYZED"
+  
+  // Teacher feedback
+  teacherFeedback      String?  // Text feedback from teacher
+  teacherFeedbackAudio String?  // URL to teacher's audio feedback
+  teacherFeedbackAt    DateTime? // When teacher provided feedback
 
   // Analysis results
   analysis      PracticeAnalysis?
