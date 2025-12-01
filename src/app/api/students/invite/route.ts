@@ -62,8 +62,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Generate invite URL
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    // Generate invite URL - use request origin or fallback to env var
+    const origin = request.headers.get('origin') || request.nextUrl.origin
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || origin
     const inviteUrl = `${appUrl}/invite/${inviteToken}`
 
     return NextResponse.json<ApiResponse>({

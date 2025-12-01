@@ -7,7 +7,7 @@ import Link from 'next/link'
 export default function AcceptInvitePage() {
   const router = useRouter()
   const params = useParams()
-  const token = params?.token as string
+  const token = (params?.token as string) || ''
   
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -27,12 +27,18 @@ export default function AcceptInvitePage() {
     // Optionally fetch student info to show name/email
     const fetchInviteInfo = async () => {
       try {
-        const response = await fetch(`/api/students/invite-info?token=${token}`)
+        const response = await fetch(`/api/students/invite-info?token=${encodeURIComponent(token)}`)
         if (response.ok) {
           const data = await response.json()
           if (data.success) {
             setStudentInfo(data.data)
+          } else {
+            // If API returns error, show it but still allow form submission
+            console.warn('Invite info error:', data.error)
           }
+        } else {
+          // Non-200 response - still show form, just without student info
+          console.warn('Failed to fetch invite info')
         }
       } catch (err) {
         // Silently fail - we'll still show the form
