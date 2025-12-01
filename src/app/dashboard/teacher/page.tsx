@@ -142,32 +142,29 @@ export default function TeacherDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{background: 'linear-gradient(135deg, #FAF9F6 0%, #F5E6D3 100%)'}}>
-        <div className="text-2xl" style={{fontFamily: 'Playfair Display, serif', color: '#1C1917'}}>Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-2xl font-semibold text-gray-900">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen" style={{background: 'linear-gradient(135deg, #FAF9F6 0%, #F5E6D3 100%)'}}>
-      {/* Luxury Navigation */}
-      <nav style={{background: '#FEFDFB', borderBottom: '2px solid #D4AF37', boxShadow: '0 4px 20px rgba(28, 25, 23, 0.08)'}}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-20 items-center">
-            <div className="flex items-center gap-12">
-              <span style={{fontSize: '2rem', fontFamily: 'Playfair Display, serif', fontWeight: '700', background: 'linear-gradient(135deg, #D4AF37 0%, #B8941E 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
+          <div className="flex justify-between h-16 items-center">
+            <div className="flex items-center gap-8">
+              <Link href="/" className="text-xl font-semibold text-gray-900 tracking-tight">
                 MusicPractice
-              </span>
-              <span style={{fontFamily: 'Cormorant Garamond, serif', color: '#78716C', fontSize: '1.1rem', letterSpacing: '0.5px'}}>
-                Teacher's Studio
-              </span>
+              </Link>
+              <span className="text-sm text-gray-600 font-medium">Teacher Dashboard</span>
             </div>
             <div className="flex items-center gap-6">
-              <span style={{fontFamily: 'Cormorant Garamond, serif', color: '#1C1917', fontSize: '1.1rem'}}>{user?.name}</span>
+              <span className="text-sm text-gray-900 font-medium">{user?.name}</span>
               <button
                 onClick={handleLogout}
-                style={{color: '#78716C', fontFamily: 'Playfair Display, serif', padding: '0.5rem 1rem', transition: 'color 0.3s'}}
-                className="hover:text-gray-900"
+                className="text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
               >
                 Logout
               </button>
@@ -176,168 +173,171 @@ export default function TeacherDashboard() {
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Luxury Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          <div className="luxury-card p-8 rounded-lg" style={{background: '#FEFDFB', border: '1px solid #E7E5E4'}}>
-            <div style={{fontSize: '3.5rem', fontFamily: 'Playfair Display, serif', fontWeight: '700', background: 'linear-gradient(135deg, #D4AF37 0%, #B8941E 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
-              {students.length}
+      <div className="pt-20 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
+              <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                {students.length}
+              </div>
+              <div className="text-gray-600 font-medium">Total Students</div>
             </div>
-            <div style={{fontFamily: 'Cormorant Garamond, serif', color: '#78716C', fontSize: '1.1rem', marginTop: '0.5rem'}}>Total Students</div>
-          </div>
-          <div className="luxury-card p-8 rounded-lg" style={{background: '#FEFDFB', border: '1px solid #E7E5E4'}}>
-            <div style={{fontSize: '3.5rem', fontFamily: 'Playfair Display, serif', fontWeight: '700', background: 'linear-gradient(135deg, #D4AF37 0%, #B8941E 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
-              {sessions.length}
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
+              <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                {sessions.length}
+              </div>
+              <div className="text-gray-600 font-medium">Total Sessions</div>
             </div>
-            <div style={{fontFamily: 'Cormorant Garamond, serif', color: '#78716C', fontSize: '1.1rem', marginTop: '0.5rem'}}>Total Sessions</div>
-          </div>
-          <div className="luxury-card p-8 rounded-lg" style={{background: '#FEFDFB', border: '1px solid #E7E5E4'}}>
-            <div style={{fontSize: '3.5rem', fontFamily: 'Playfair Display, serif', fontWeight: '700', background: 'linear-gradient(135deg, #D4AF37 0%, #B8941E 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
-              {Math.floor(sessions.reduce((acc, s) => acc + s.duration, 0) / 60)}
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
+              <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                {Math.floor(sessions.reduce((acc, s) => acc + s.duration, 0) / 60)}
+              </div>
+              <div className="text-gray-600 font-medium">Minutes Practiced</div>
             </div>
-            <div style={{fontFamily: 'Cormorant Garamond, serif', color: '#78716C', fontSize: '1.1rem', marginTop: '0.5rem'}}>Minutes Practiced</div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          {/* Students Section */}
-          <div className="luxury-card rounded-lg" style={{background: '#FEFDFB', border: '1px solid #E7E5E4'}}>
-            <div className="p-8 flex justify-between items-center" style={{borderBottom: '1px solid #E7E5E4'}}>
-              <h2 style={{fontSize: '1.75rem', fontFamily: 'Playfair Display, serif', fontWeight: '600', color: '#1C1917'}}>Students</h2>
-              <button
-                onClick={() => setShowInviteModal(true)}
-                className="luxury-button px-6 py-3 rounded-lg text-sm"
-              >
-                Invite Student
-              </button>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Students Section */}
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-xl overflow-hidden">
+              <div className="p-8 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                  Students
+                </h2>
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all"
+                >
+                  Invite Student
+                </button>
+              </div>
+              <div className="p-8">
+                {students.length === 0 ? (
+                  <p className="text-gray-500 text-center py-12 font-medium">
+                    No students yet. Invite your first student!
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {students.map((student) => (
+                      <div key={student.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-bold text-gray-900 text-lg mb-1">
+                              {student.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-2">
+                              {student.email}
+                            </p>
+                            {student.inviteToken && (
+                              <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-lg">
+                                Pending Invitation
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                              {student._count.practiceSessions}
+                            </div>
+                            <div className="text-xs text-gray-600 font-medium">sessions</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="p-8">
-              {students.length === 0 ? (
-                <p style={{fontFamily: 'Cormorant Garamond, serif', color: '#78716C', textAlign: 'center', padding: '2rem'}}>
-                  No students yet. Invite your first student!
-                </p>
-              ) : (
-                <div className="space-y-6">
-                  {students.map((student) => (
-                    <div key={student.id} className="luxury-card p-6 rounded-lg" style={{background: '#FAF9F6', border: '1px solid #E7E5E4'}}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 style={{fontFamily: 'Playfair Display, serif', fontSize: '1.25rem', fontWeight: '600', color: '#1C1917'}}>
-                            {student.name}
-                          </h3>
-                          <p style={{fontFamily: 'Cormorant Garamond, serif', fontSize: '1rem', color: '#78716C', marginTop: '0.25rem'}}>
-                            {student.email}
-                          </p>
-                          {student.inviteToken && (
-                            <span style={{display: 'inline-block', marginTop: '0.5rem', padding: '0.25rem 0.75rem', background: '#F5E6D3', color: '#B8941E', fontSize: '0.875rem', borderRadius: '0.25rem', fontFamily: 'Cormorant Garamond, serif'}}>
-                              Pending Invitation
-                            </span>
+
+            {/* Recent Sessions */}
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-xl overflow-hidden">
+              <div className="p-8 border-b border-gray-100">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                  Recent Practice Sessions
+                </h2>
+              </div>
+              <div className="p-8">
+                {sessions.length === 0 ? (
+                  <p className="text-gray-500 text-center py-12 font-medium">
+                    No practice sessions yet
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {sessions.slice(0, 10).map((session) => (
+                      <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="font-bold text-gray-900 text-lg mb-1">
+                              {session.title}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {session.student.name}
+                            </p>
+                          </div>
+                          <span className="text-sm text-gray-600 font-medium">
+                            {formatDuration(session.duration)}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => setSelectedSession(session)}
+                          className="w-full mb-3 bg-gray-100 text-gray-900 py-2 px-4 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-all"
+                        >
+                          Listen to Recording
+                        </button>
+
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500">
+                            {new Date(session.createdAt).toLocaleDateString()}
+                          </span>
+                          {session.analysis ? (
+                            <button
+                              onClick={() => setSelectedSession(session)}
+                              className="px-4 py-2 bg-green-100 text-green-800 text-sm font-semibold rounded-xl hover:bg-green-200 transition-all"
+                            >
+                              View Analysis
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleAnalyze(session.id)}
+                              disabled={analyzing === session.id}
+                              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25"
+                            >
+                              {analyzing === session.id ? 'Analyzing...' : 'Analyze'}
+                            </button>
                           )}
                         </div>
-                        <div style={{textAlign: 'right'}}>
-                          <div style={{fontSize: '2.5rem', fontFamily: 'Playfair Display, serif', fontWeight: '700', background: 'linear-gradient(135deg, #D4AF37 0%, #B8941E 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
-                            {student._count.practiceSessions}
-                          </div>
-                          <div style={{fontSize: '0.875rem', fontFamily: 'Cormorant Garamond, serif', color: '#78716C'}}>sessions</div>
-                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Recent Sessions with Audio Playback */}
-          <div className="luxury-card rounded-lg" style={{background: '#FEFDFB', border: '1px solid #E7E5E4'}}>
-            <div className="p-8" style={{borderBottom: '1px solid #E7E5E4'}}>
-              <h2 style={{fontSize: '1.75rem', fontFamily: 'Playfair Display, serif', fontWeight: '600', color: '#1C1917'}}>
-                Recent Practice Sessions
-              </h2>
-            </div>
-            <div className="p-8">
-              {sessions.length === 0 ? (
-                <p style={{fontFamily: 'Cormorant Garamond, serif', color: '#78716C', textAlign: 'center', padding: '2rem'}}>
-                  No practice sessions yet
-                </p>
-              ) : (
-                <div className="space-y-6">
-                  {sessions.slice(0, 10).map((session) => (
-                    <div key={session.id} className="luxury-card p-6 rounded-lg" style={{background: '#FAF9F6', border: '1px solid #E7E5E4'}}>
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 style={{fontFamily: 'Playfair Display, serif', fontSize: '1.1rem', fontWeight: '600', color: '#1C1917'}}>
-                            {session.title}
-                          </h3>
-                          <p style={{fontFamily: 'Cormorant Garamond, serif', fontSize: '0.95rem', color: '#78716C', marginTop: '0.25rem'}}>
-                            {session.student.name}
-                          </p>
-                        </div>
-                        <span style={{fontFamily: 'Cormorant Garamond, serif', fontSize: '0.9rem', color: '#78716C'}}>
-                          {formatDuration(session.duration)}
-                        </span>
-                      </div>
-
-                      <button
-                        onClick={() => setSelectedSession(session)}
-                        className="luxury-button-secondary w-full py-2 px-4 rounded-lg text-sm mb-3"
-                      >
-                        Listen to Recording
-                      </button>
-
-                      <div className="flex justify-between items-center">
-                        <span style={{fontSize: '0.875rem', fontFamily: 'Cormorant Garamond, serif', color: '#78716C'}}>
-                          {new Date(session.createdAt).toLocaleDateString()}
-                        </span>
-                        {session.analysis ? (
-                          <button
-                            onClick={() => setSelectedSession(session)}
-                            style={{padding: '0.375rem 0.75rem', background: 'linear-gradient(135deg, #D4AF37 0%, #B8941E 100%)', color: '#1C1917', fontSize: '0.875rem', borderRadius: '0.375rem', fontFamily: 'Playfair Display, serif'}}
-                          >
-                            View Analysis
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleAnalyze(session.id)}
-                            disabled={analyzing === session.id}
-                            className="luxury-button-secondary py-1 px-3 rounded text-xs"
-                          >
-                            {analyzing === session.id ? 'Analyzing...' : 'Analyze'}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Session Detail Modal with Audio Player */}
+      {/* Session Detail Modal */}
       {selectedSession && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{background: 'rgba(28, 25, 23, 0.7)', backdropFilter: 'blur(4px)'}}>
-          <div className="luxury-card rounded-lg max-w-2xl w-full p-8" style={{background: '#FEFDFB', border: '2px solid #D4AF37', maxHeight: '90vh', overflowY: 'auto'}}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto border border-gray-100 shadow-2xl">
             <div className="flex justify-between items-start mb-6">
-              <h2 style={{fontSize: '2rem', fontFamily: 'Playfair Display, serif', fontWeight: '600', color: '#1C1917'}}>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
                 {selectedSession.title}
               </h2>
               <button
                 onClick={() => setSelectedSession(null)}
-                style={{fontSize: '2rem', color: '#78716C', fontWeight: '300'}}
-                className="hover:text-gray-900"
+                className="text-gray-500 hover:text-gray-900 text-3xl font-light transition-colors"
               >
                 ×
               </button>
             </div>
 
-            <div className="mb-6">
-              <p style={{fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', color: '#78716C', marginBottom: '0.5rem'}}>
-                Student: <span style={{color: '#1C1917', fontWeight: '600'}}>{selectedSession.student.name}</span>
+            <div className="mb-6 space-y-2">
+              <p className="text-gray-700">
+                <span className="font-semibold">Student:</span> {selectedSession.student.name}
               </p>
-              <p style={{fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', color: '#78716C'}}>
-                Duration: <span style={{color: '#1C1917', fontWeight: '600'}}>{formatDuration(selectedSession.duration)}</span>
+              <p className="text-gray-700">
+                <span className="font-semibold">Duration:</span> {formatDuration(selectedSession.duration)}
               </p>
             </div>
 
@@ -351,31 +351,27 @@ export default function TeacherDashboard() {
 
             {/* Analysis if available */}
             {selectedSession.analysis && (
-              <div className="mt-6 space-y-6">
-                <div style={{height: '1px', background: 'linear-gradient(90deg, transparent 0%, #D4AF37 50%, transparent 100%)'}}></div>
-
+              <div className="mt-6 space-y-6 pt-6 border-t border-gray-200">
                 <div>
-                  <h3 style={{fontSize: '1.5rem', fontFamily: 'Playfair Display, serif', fontWeight: '600', color: '#1C1917', marginBottom: '1rem'}}>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-4">
                     AI Analysis
                   </h3>
                   {selectedSession.analysis.overallScore && (
-                    <div style={{fontSize: '3rem', fontFamily: 'Playfair Display, serif', fontWeight: '700', background: 'linear-gradient(135deg, #D4AF37 0%, #B8941E 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '1rem'}}>
+                    <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
                       {selectedSession.analysis.overallScore}/10
                     </div>
                   )}
-                  <p style={{fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', color: '#1C1917', lineHeight: '1.8'}}>
+                  <p className="text-gray-700 leading-relaxed mb-6">
                     {selectedSession.analysis.overallFeedback}
                   </p>
                 </div>
 
                 {selectedSession.analysis.strengths && JSON.parse(selectedSession.analysis.strengths).length > 0 && (
                   <div>
-                    <h4 style={{fontSize: '1.25rem', fontFamily: 'Playfair Display, serif', fontWeight: '600', color: '#1C1917', marginBottom: '0.75rem'}}>
-                      Strengths
-                    </h4>
-                    <ul style={{listStyleType: 'disc', paddingLeft: '1.5rem', fontFamily: 'Cormorant Garamond, serif', fontSize: '1.05rem', lineHeight: '1.8', color: '#1C1917'}}>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Strengths</h4>
+                    <ul className="list-disc list-inside space-y-2">
                       {JSON.parse(selectedSession.analysis.strengths).map((strength: string, i: number) => (
-                        <li key={i} style={{marginBottom: '0.5rem'}}>{strength}</li>
+                        <li key={i} className="text-green-700">{strength}</li>
                       ))}
                     </ul>
                   </div>
@@ -383,12 +379,10 @@ export default function TeacherDashboard() {
 
                 {selectedSession.analysis.areasForImprovement && JSON.parse(selectedSession.analysis.areasForImprovement).length > 0 && (
                   <div>
-                    <h4 style={{fontSize: '1.25rem', fontFamily: 'Playfair Display, serif', fontWeight: '600', color: '#1C1917', marginBottom: '0.75rem'}}>
-                      Areas for Improvement
-                    </h4>
-                    <ul style={{listStyleType: 'disc', paddingLeft: '1.5rem', fontFamily: 'Cormorant Garamond, serif', fontSize: '1.05rem', lineHeight: '1.8', color: '#78716C'}}>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Areas for Improvement</h4>
+                    <ul className="list-disc list-inside space-y-2">
                       {JSON.parse(selectedSession.analysis.areasForImprovement).map((area: string, i: number) => (
-                        <li key={i} style={{marginBottom: '0.5rem'}}>{area}</li>
+                        <li key={i} className="text-orange-700">{area}</li>
                       ))}
                     </ul>
                   </div>
@@ -398,7 +392,7 @@ export default function TeacherDashboard() {
 
             <button
               onClick={() => setSelectedSession(null)}
-              className="luxury-button-secondary w-full py-3 px-4 rounded-lg mt-6"
+              className="mt-8 w-full bg-gray-200 text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all"
             >
               Close
             </button>
@@ -406,20 +400,20 @@ export default function TeacherDashboard() {
         </div>
       )}
 
-      {/* Luxury Invite Modal */}
+      {/* Invite Modal */}
       {showInviteModal && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{background: 'rgba(28, 25, 23, 0.7)', backdropFilter: 'blur(4px)'}}>
-          <div className="luxury-card rounded-lg max-w-md w-full p-8" style={{background: '#FEFDFB', border: '2px solid #D4AF37'}}>
-            <h2 style={{fontSize: '2rem', fontFamily: 'Playfair Display, serif', fontWeight: '600', color: '#1C1917', marginBottom: '1.5rem'}}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-md w-full p-8 border border-gray-100 shadow-2xl">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-6">
               Invite Student
             </h2>
 
             {inviteUrl ? (
               <div>
-                <p style={{marginBottom: '1.5rem', fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', color: '#78716C'}}>
+                <p className="mb-4 text-gray-700 font-medium">
                   Student invited successfully! Share this link:
                 </p>
-                <div style={{background: '#FAF9F6', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', fontFamily: 'Cormorant Garamond, serif', fontSize: '0.95rem', wordBreak: 'break-all', border: '1px solid #E7E5E4'}}>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6 text-sm text-gray-900 break-all font-mono">
                   {inviteUrl}
                 </div>
                 <div className="flex gap-3">
@@ -428,7 +422,7 @@ export default function TeacherDashboard() {
                       navigator.clipboard.writeText(inviteUrl)
                       alert('Link copied to clipboard!')
                     }}
-                    className="luxury-button flex-1 py-3 px-4 rounded-lg"
+                    className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
                   >
                     Copy Link
                   </button>
@@ -437,7 +431,7 @@ export default function TeacherDashboard() {
                       setShowInviteModal(false)
                       setInviteUrl('')
                     }}
-                    className="luxury-button-secondary flex-1 py-3 px-4 rounded-lg"
+                    className="flex-1 bg-gray-200 text-gray-900 py-3 px-4 rounded-xl font-semibold hover:bg-gray-300 transition-all"
                   >
                     Close
                   </button>
@@ -446,7 +440,7 @@ export default function TeacherDashboard() {
             ) : (
               <form onSubmit={handleInviteStudent}>
                 <div className="mb-6">
-                  <label style={{display: 'block', fontSize: '1rem', fontFamily: 'Playfair Display, serif', fontWeight: '500', color: '#1C1917', marginBottom: '0.5rem'}}>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
                     Student Name
                   </label>
                   <input
@@ -454,11 +448,11 @@ export default function TeacherDashboard() {
                     required
                     value={inviteFormData.name}
                     onChange={(e) => setInviteFormData({ ...inviteFormData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg"
+                    className="w-full px-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div className="mb-6">
-                  <label style={{display: 'block', fontSize: '1rem', fontFamily: 'Playfair Display, serif', fontWeight: '500', color: '#1C1917', marginBottom: '0.5rem'}}>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
                     Student Email
                   </label>
                   <input
@@ -466,20 +460,20 @@ export default function TeacherDashboard() {
                     required
                     value={inviteFormData.email}
                     onChange={(e) => setInviteFormData({ ...inviteFormData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg"
+                    className="w-full px-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div className="flex gap-3">
                   <button
                     type="submit"
-                    className="luxury-button flex-1 py-3 px-4 rounded-lg"
+                    className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
                   >
                     Send Invite
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowInviteModal(false)}
-                    className="luxury-button-secondary flex-1 py-3 px-4 rounded-lg"
+                    className="flex-1 bg-gray-200 text-gray-900 py-3 px-4 rounded-xl font-semibold hover:bg-gray-300 transition-all"
                   >
                     Cancel
                   </button>
