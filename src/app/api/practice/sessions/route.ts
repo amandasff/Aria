@@ -97,9 +97,12 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
   } catch (error) {
     console.error('Create practice session error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' 
+        ? `Internal server error: ${errorMessage}` 
+        : 'Internal server error. Please try again.',
     }, { status: 500 })
   }
 }

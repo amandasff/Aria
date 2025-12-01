@@ -440,7 +440,13 @@ export default function TeacherDashboard() {
             </div>
 
             {/* Student Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+              <div className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4">
+                <div className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+                  {selectedStudent.stats.streak || 0}
+                </div>
+                <div className="text-xs text-gray-600 font-medium">Day Streak 🔥</div>
+              </div>
               <div className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4">
                 <div className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   {selectedStudent.stats.totalSessions}

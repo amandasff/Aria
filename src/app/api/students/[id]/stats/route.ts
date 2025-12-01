@@ -75,6 +75,42 @@ export async function GET(
       s => new Date(s.createdAt) >= oneWeekAgo
     ).length
 
+    // Calculate streak
+    let streak = 0
+    if (sessions.length > 0) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      // Group sessions by date
+      const sessionsByDate = new Map<string, boolean>()
+      sessions.forEach(session => {
+        const date = new Date(session.createdAt)
+        date.setHours(0, 0, 0, 0)
+        const dateKey = date.toISOString().split('T')[0]
+        sessionsByDate.set(dateKey, true)
+      })
+
+      // Start from today or yesterday
+      let checkDate = new Date()
+      checkDate.setHours(0, 0, 0, 0)
+      
+      // If no session today, start from yesterday
+      const todayKey = checkDate.toISOString().split('T')[0]
+      if (!sessionsByDate.has(todayKey)) {
+        checkDate.setDate(checkDate.getDate() - 1)
+      }
+
+      while (true) {
+        const dateKey = checkDate.toISOString().split('T')[0]
+        if (sessionsByDate.has(dateKey)) {
+          streak++
+          checkDate.setDate(checkDate.getDate() - 1)
+        } else {
+          break
+        }
+      }
+    }
+
     return NextResponse.json<ApiResponse>({
       success: true,
       data: {
@@ -86,6 +122,7 @@ export async function GET(
           analyzedSessions,
           averageSessionDuration,
           sessionsThisWeek,
+          streak,
         },
         sessions,
       },

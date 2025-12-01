@@ -27,6 +27,7 @@ export default function StudentDashboard() {
   const [uploading, setUploading] = useState(false)
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [analyzing, setAnalyzing] = useState<string | null>(null)
+  const [streak, setStreak] = useState(0)
 
   useEffect(() => {
     fetchData()
@@ -60,6 +61,15 @@ export default function StudentDashboard() {
       const sessionsData = await sessionsRes.json()
       setSessions(sessionsData.data || [])
 
+      // Fetch streak
+      const streakRes = await fetch('/api/students/streak', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const streakData = await streakRes.json()
+      if (streakData.success) {
+        setStreak(streakData.data.streak)
+      }
+
       setLoading(false)
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -81,45 +91,60 @@ export default function StudentDashboard() {
 
     try {
       const token = localStorage.getItem('token')
+      if (!token) {
+        alert('Not authenticated. Please log in again.')
+        router.push('/login')
+        return
+      }
 
       // Convert blob to base64
-      const reader = new FileReader()
-      reader.readAsDataURL(recordedAudio.blob)
-      reader.onloadend = async () => {
-        const base64Audio = reader.result as string
-
-        const response = await fetch('/api/practice/sessions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            title: sessionTitle,
-            description: sessionDescription,
-            duration: recordedAudio.duration,
-            audioData: base64Audio,
-            fileName: 'recording.webm',
-          }),
-        })
-
-        const data = await response.json()
-
-        if (response.ok) {
-          alert('Practice session saved successfully!')
-          setShowRecorder(false)
-          setSessionTitle('')
-          setSessionDescription('')
-          setRecordedAudio(null)
-          fetchData()
-        } else {
-          alert(data.error || 'Failed to save session')
+      const base64Audio = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          if (reader.result && typeof reader.result === 'string') {
+            resolve(reader.result)
+          } else {
+            reject(new Error('Failed to convert audio to base64'))
+          }
         }
+        reader.onerror = () => {
+          reject(new Error('Error reading audio file'))
+        }
+        reader.readAsDataURL(recordedAudio.blob)
+      })
 
-        setUploading(false)
+      const response = await fetch('/api/practice/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: sessionTitle,
+          description: sessionDescription,
+          duration: recordedAudio.duration,
+          audioData: base64Audio,
+          fileName: 'recording.webm',
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        alert('Practice session saved successfully!')
+        setShowRecorder(false)
+        setSessionTitle('')
+        setSessionDescription('')
+        setRecordedAudio(null)
+        await fetchData()
+      } else {
+        console.error('Upload error:', data)
+        alert(data.error || 'Failed to save session. Please check the console for details.')
       }
     } catch (error) {
-      alert('Error saving session')
+      console.error('Error saving session:', error)
+      alert(`Error saving session: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
       setUploading(false)
     }
   }
@@ -194,7 +219,13 @@ export default function StudentDashboard() {
       <div className="pt-20 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
+              <div className="text-5xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
+                {streak}
+              </div>
+              <div className="text-gray-600 font-medium">Day Streak 🔥</div>
+            </div>
             <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-100/50 shadow-lg p-8 hover:shadow-xl transition-shadow">
               <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
                 {sessions.length}
