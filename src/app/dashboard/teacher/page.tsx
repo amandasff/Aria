@@ -30,6 +30,24 @@ interface Session {
   analysis: any
 }
 
+interface StudentStats {
+  student: {
+    id: string
+    name: string
+    email: string
+    createdAt: string
+  }
+  stats: {
+    totalSessions: number
+    totalPracticeTime: number
+    totalMinutes: number
+    analyzedSessions: number
+    averageSessionDuration: number
+    sessionsThisWeek: number
+  }
+  sessions: Session[]
+}
+
 export default function TeacherDashboard() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
@@ -40,6 +58,9 @@ export default function TeacherDashboard() {
   const [inviteFormData, setInviteFormData] = useState({ name: '', email: '' })
   const [inviteUrl, setInviteUrl] = useState('')
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
+  const [selectedStudent, setSelectedStudent] = useState<StudentStats | null>(null)
+  const [loadingStudentStats, setLoadingStudentStats] = useState(false)
+  const [deletingStudent, setDeletingStudent] = useState<string | null>(null)
   const [analyzing, setAnalyzing] = useState<string | null>(null)
 
   useEffect(() => {
@@ -113,6 +134,58 @@ export default function TeacherDashboard() {
     }
   }
 
+  const handleViewStudent = async (studentId: string) => {
+    setLoadingStudentStats(true)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/students/${studentId}/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSelectedStudent(data.data)
+      } else {
+        alert(data.error || 'Failed to load student stats')
+      }
+    } catch (error) {
+      alert('Error loading student stats')
+    } finally {
+      setLoadingStudentStats(false)
+    }
+  }
+
+  const handleDeleteStudent = async (studentId: string, studentName: string) => {
+    if (!confirm(`Are you sure you want to delete ${studentName}? This will permanently delete all their practice sessions and cannot be undone.`)) {
+      return
+    }
+
+    setDeletingStudent(studentId)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/students?id=${studentId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        fetchData()
+        if (selectedStudent?.student.id === studentId) {
+          setSelectedStudent(null)
+        }
+      } else {
+        alert(data.error || 'Failed to delete student')
+      }
+    } catch (error) {
+      alert('Error deleting student')
+    } finally {
+      setDeletingStudent(null)
+    }
+  }
+
   const handleAnalyze = async (sessionId: string) => {
     setAnalyzing(sessionId)
     try {
@@ -122,6 +195,10 @@ export default function TeacherDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       })
       fetchData()
+      // Refresh student stats if viewing a student
+      if (selectedStudent) {
+        handleViewStudent(selectedStudent.student.id)
+      }
     } catch (error) {
       alert('Error analyzing session')
     } finally {
@@ -221,24 +298,48 @@ export default function TeacherDashboard() {
                     {students.map((student) => (
                       <div key={student.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all">
                         <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-bold text-gray-900 text-lg mb-1">
-                              {student.name}
-                            </h3>
-                            <p className="text-sm text-gray-600 mb-2">
-                              {student.email}
-                            </p>
+                          <div className="flex-1">
+                            <button
+                              onClick={() => handleViewStudent(student.id)}
+                              className="text-left w-full"
+                            >
+                              <h3 className="font-bold text-gray-900 text-lg mb-1 hover:text-indigo-600 transition-colors">
+                                {student.name}
+                              </h3>
+                              <p className="text-sm text-gray-600 mb-2">
+                                {student.email}
+                              </p>
+                            </button>
                             {student.inviteToken && (
                               <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-lg">
                                 Pending Invitation
                               </span>
                             )}
                           </div>
-                          <div className="text-right">
-                            <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                              {student._count.practiceSessions}
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                {student._count.practiceSessions}
+                              </div>
+                              <div className="text-xs text-gray-600 font-medium">sessions</div>
                             </div>
-                            <div className="text-xs text-gray-600 font-medium">sessions</div>
+                            <button
+                              onClick={() => handleDeleteStudent(student.id, student.name)}
+                              disabled={deletingStudent === student.id}
+                              className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                              title="Delete student"
+                            >
+                              {deletingStudent === student.id ? (
+                                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              )}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -315,6 +416,111 @@ export default function TeacherDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Student Detail Modal */}
+      {selectedStudent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-4xl w-full p-8 my-8 border border-gray-100 shadow-2xl">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-2">
+                  {selectedStudent.student.name}
+                </h2>
+                <p className="text-gray-600">{selectedStudent.student.email}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Joined {new Date(selectedStudent.student.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedStudent(null)}
+                className="text-gray-500 hover:text-gray-900 text-3xl font-light transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Student Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4">
+                <div className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  {selectedStudent.stats.totalSessions}
+                </div>
+                <div className="text-xs text-gray-600 font-medium">Total Sessions</div>
+              </div>
+              <div className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4">
+                <div className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  {selectedStudent.stats.totalMinutes}
+                </div>
+                <div className="text-xs text-gray-600 font-medium">Total Minutes</div>
+              </div>
+              <div className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4">
+                <div className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  {selectedStudent.stats.analyzedSessions}
+                </div>
+                <div className="text-xs text-gray-600 font-medium">Analyzed</div>
+              </div>
+              <div className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4">
+                <div className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  {selectedStudent.stats.sessionsThisWeek}
+                </div>
+                <div className="text-xs text-gray-600 font-medium">This Week</div>
+              </div>
+            </div>
+
+            {/* Practice Sessions */}
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Practice Sessions</h3>
+              {selectedStudent.sessions.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No practice sessions yet</p>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {selectedStudent.sessions.map((session) => (
+                    <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4 hover:shadow-lg transition-all">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-bold text-gray-900">{session.title}</h4>
+                          <p className="text-sm text-gray-600">
+                            {new Date(session.createdAt).toLocaleDateString()} • {formatDuration(session.duration)}
+                          </p>
+                        </div>
+                        {session.analysis ? (
+                          <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-lg">
+                            Analyzed
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleAnalyze(session.id)}
+                            disabled={analyzing === session.id}
+                            className="px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all"
+                          >
+                            {analyzing === session.id ? 'Analyzing...' : 'Analyze'}
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedSession(session)
+                          setSelectedStudent(null)
+                        }}
+                        className="w-full bg-gray-100 text-gray-900 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-all"
+                      >
+                        Listen to Recording
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setSelectedStudent(null)}
+              className="mt-6 w-full bg-gray-200 text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Session Detail Modal */}
       {selectedSession && (
