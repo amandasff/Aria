@@ -44,6 +44,7 @@ interface StudentStats {
     analyzedSessions: number
     averageSessionDuration: number
     sessionsThisWeek: number
+    streak: number
   }
   sessions: Session[]
 }
