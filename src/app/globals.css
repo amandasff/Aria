@@ -7,12 +7,12 @@
 :root {
   --foreground-rgb: 26, 26, 26;
   --background-rgb: 255, 255, 255;
-  --primary: #1E59C7;
-  --primary-dark: #1a4ba8;
-  --secondary: #3B82F6;
-  --accent: #1E59C7;
+  --primary: #6366F1;
+  --primary-dark: #4F46E5;
+  --secondary: #8B5CF6;
+  --accent: #6366F1;
   --surface: #FFFFFF;
-  --surface-light: #F9FAFB;
+  --surface-light: #F8FAFC;
 }
 
 body {
@@ -21,6 +21,7 @@ body {
   font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
 }
 
 h1, h2, h3, h4, h5, h6 {
