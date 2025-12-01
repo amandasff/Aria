@@ -8,8 +8,11 @@ import path from 'path'
 
 const feedbackSchema = z.object({
   feedback: z.string().nullable().optional(),
+  textFeedback: z.string().nullable().optional(), // Alternative field name
   audioData: z.string().nullable().optional(),
+  audioFeedbackData: z.string().nullable().optional(), // Alternative field name
   fileName: z.string().nullable().optional(),
+  audioFeedbackFileName: z.string().nullable().optional(), // Alternative field name
 })
 
 export async function POST(
@@ -37,9 +40,14 @@ export async function POST(
       }, { status: 400 })
     }
 
-    const { feedback, audioData, fileName } = validationResult.data
+    const { feedback, textFeedback, audioData, audioFeedbackData, fileName, audioFeedbackFileName } = validationResult.data
 
-    if (!feedback && !audioData) {
+    // Support both field name variations
+    const finalFeedback = feedback || textFeedback || null
+    const finalAudioData = audioData || audioFeedbackData || null
+    const finalFileName = fileName || audioFeedbackFileName || null
+
+    if (!finalFeedback && !finalAudioData) {
       return NextResponse.json<ApiResponse>({
         success: false,
         error: 'Please provide either text or audio feedback',
@@ -75,9 +83,9 @@ export async function POST(
     let teacherFeedbackAudio: string | null = null
 
     // Handle audio feedback
-    if (audioData && fileName) {
-      const audioBuffer = Buffer.from(audioData.split(',')[1] || audioData, 'base64')
-      const ext = path.extname(fileName) || '.webm'
+    if (finalAudioData && finalFileName) {
+      const audioBuffer = Buffer.from(finalAudioData.split(',')[1] || finalAudioData, 'base64')
+      const ext = path.extname(finalFileName) || '.webm'
       const blobFileName = `audio/feedback/${sessionId}/teacher-feedback${ext}`
 
       if (process.env.BLOB_READ_WRITE_TOKEN) {
@@ -100,7 +108,7 @@ export async function POST(
     const updatedSession = await prisma.practiceSession.update({
       where: { id: sessionId },
       data: {
-        teacherFeedback: feedback || null,
+        teacherFeedback: finalFeedback,
         teacherFeedbackAudio: teacherFeedbackAudio,
         teacherFeedbackAt: new Date(),
       },

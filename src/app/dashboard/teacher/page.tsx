@@ -272,15 +272,23 @@ export default function TeacherDashboard() {
         setShowFeedbackModal(false)
         setFeedbackText('')
         setFeedbackAudio(null)
-        fetchData()
+        
+        // Update the selected session with the new feedback data
+        if (data.data) {
+          setSelectedSession({
+            ...selectedSession,
+            teacherFeedback: data.data.teacherFeedback || null,
+            teacherFeedbackAudio: data.data.teacherFeedbackAudio || null,
+            teacherFeedbackAt: data.data.teacherFeedbackAt || null,
+          })
+        }
+        
+        // Refresh all data
+        await fetchData()
+        
         // Refresh student stats if viewing a student
         if (selectedStudent) {
-          handleViewStudent(selectedStudent.student.id)
-        }
-        // Refresh selected session
-        const updatedSession = sessions.find(s => s.id === selectedSession.id)
-        if (updatedSession) {
-          setSelectedSession(updatedSession)
+          await handleViewStudent(selectedStudent.student.id)
         }
       } else {
         alert(data.error || 'Failed to save feedback')
@@ -606,11 +614,21 @@ export default function TeacherDashboard() {
                         >
                           Listen to Recording
                         </button>
-                        {(session.teacherFeedback || session.teacherFeedbackAudio) && (
-                          <span className="px-3 py-2 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded-lg flex items-center">
-                            💬 Feedback
-                          </span>
-                        )}
+                        <button
+                          onClick={() => {
+                            setSelectedSession(session)
+                            setFeedbackText(session.teacherFeedback || '')
+                            setFeedbackAudio(null)
+                            setShowFeedbackModal(true)
+                          }}
+                          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                            session.teacherFeedback || session.teacherFeedbackAudio
+                              ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
+                              : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25'
+                          }`}
+                        >
+                          {session.teacherFeedback || session.teacherFeedbackAudio ? '💬 Edit Feedback' : '💬 Give Feedback'}
+                        </button>
                       </div>
                     </div>
                   ))}
