@@ -246,6 +246,13 @@ export default function TeacherDashboard() {
 
   const handleSaveFeedback = async () => {
     if (!selectedSession) return
+    const segmentId = (selectedSession as any).currentSegment?.id || (selectedSession as any).segments?.[0]?.id
+    
+    if (!segmentId) {
+      alert('No segment selected for feedback')
+      return
+    }
+    
     if (!feedbackText.trim() && !feedbackAudio) {
       alert('Please provide text feedback or record audio feedback')
       return
@@ -274,16 +281,16 @@ export default function TeacherDashboard() {
         })
       }
 
-      const response = await fetch(`/api/practice/sessions/${selectedSession.id}/feedback`, {
+      const response = await fetch(`/api/practice/segments/${segmentId}/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          feedback: feedbackText.trim() || null,
-          audioData: audioData,
-          fileName: feedbackAudio ? 'teacher-feedback.webm' : null,
+          textFeedback: feedbackText.trim() || null,
+          audioFeedbackData: audioData,
+          audioFeedbackFileName: feedbackAudio ? 'teacher-feedback.webm' : null,
         }),
       })
 
@@ -295,8 +302,16 @@ export default function TeacherDashboard() {
         setFeedbackText('')
         setFeedbackAudio(null)
         
-        // Refresh selected session - feedback is now on segments
-        if (selectedSession && selectedSession.id) {
+        // Refresh all data
+        await fetchData()
+        
+        // Refresh student stats if viewing a student
+        if (selectedStudent) {
+          await handleViewStudent(selectedStudent.student.id)
+        }
+        
+        // Refresh selected session
+        if (selectedSession.id) {
           const sessionRes = await fetch(`/api/practice/session/${selectedSession.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
@@ -304,14 +319,6 @@ export default function TeacherDashboard() {
           if (sessionRes.ok && sessionData.data) {
             setSelectedSession(sessionData.data.session as any)
           }
-        }
-        
-        // Refresh all data
-        await fetchData()
-        
-        // Refresh student stats if viewing a student
-        if (selectedStudent) {
-          await handleViewStudent(selectedStudent.student.id)
         }
       } else {
         alert(data.error || 'Failed to save feedback')
