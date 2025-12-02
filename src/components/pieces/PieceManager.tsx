@@ -209,7 +209,7 @@ export default function PieceManager({ onPieceSelect }: PieceManagerProps) {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/95 backdrop-blur-md rounded-xl max-w-lg w-full p-6 border border-gray-100 shadow-2xl">
+          <div className="bg-white/95 backdrop-blur-md rounded-xl max-w-2xl w-full p-6 border border-gray-100 shadow-2xl">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
               {editingPiece ? 'Edit Piece' : 'Add Piece'}
             </h2>
