@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if student already has an active session
-    const activeSession = await prisma.practiceSession.findFirst({
+    const activeSession = await (prisma as any).practiceSession.findFirst({
       where: {
         studentId: tokenPayload.userId,
         status: 'ACTIVE',
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new active session
-    const session = await prisma.practiceSession.create({
+    const session = await (prisma as any).practiceSession.create({
       data: {
         studentId: tokenPayload.userId,
         status: 'ACTIVE',

@@ -34,13 +34,16 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get all sessions for this student, ordered by date
-    const sessions = await prisma.practiceSession.findMany({
-      where: { studentId },
-      select: {
-        createdAt: true,
+    // Get all completed sessions for this student, ordered by date
+    const sessions = await (prisma as any).practiceSession.findMany({
+      where: { 
+        studentId,
+        status: 'COMPLETED',
       },
-      orderBy: { createdAt: 'desc' },
+      select: {
+        date: true,
+      },
+      orderBy: { date: 'desc' },
     })
 
     // Calculate streak
@@ -52,9 +55,10 @@ export async function GET(request: NextRequest) {
       const yesterday = new Date(today)
       yesterday.setDate(yesterday.getDate() - 1)
 
+      const sessionsArray = sessions as any[]
       // Check if there's a session today or yesterday
-      const hasRecentSession = sessions.some(session => {
-        const sessionDate = new Date(session.createdAt)
+      const hasRecentSession = sessionsArray.some((session: any) => {
+        const sessionDate = new Date(session.date)
         sessionDate.setHours(0, 0, 0, 0)
         return sessionDate.getTime() === today.getTime() || sessionDate.getTime() === yesterday.getTime()
       })
@@ -62,8 +66,8 @@ export async function GET(request: NextRequest) {
       if (hasRecentSession) {
         // Group sessions by date
         const sessionsByDate = new Map<string, boolean>()
-        sessions.forEach(session => {
-          const date = new Date(session.createdAt)
+        sessionsArray.forEach((session: any) => {
+          const date = new Date(session.date)
           date.setHours(0, 0, 0, 0)
           const dateKey = date.toISOString().split('T')[0]
           sessionsByDate.set(dateKey, true)

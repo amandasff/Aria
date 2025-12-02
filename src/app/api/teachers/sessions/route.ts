@@ -6,20 +6,48 @@ import { ApiResponse } from '@/types'
 export async function GET(request: NextRequest) {
   try {
     const tokenPayload = getUserFromRequest(request)
-    if (!tokenPayload || tokenPayload.role !== 'STUDENT') {
+    if (!tokenPayload || tokenPayload.role !== 'TEACHER') {
       return NextResponse.json<ApiResponse>({
         success: false,
-        error: 'Unauthorized. Only students can view their practice sessions.',
+        error: 'Unauthorized. Only teachers can view all student sessions.',
       }, { status: 401 })
     }
 
-    // Get all completed sessions with segments
+    // Get all students for this teacher
+    const students = await prisma.user.findMany({
+      where: {
+        teacherId: tokenPayload.userId,
+      },
+      select: {
+        id: true,
+      },
+    })
+
+    const studentIds = students.map(s => s.id)
+
+    if (studentIds.length === 0) {
+      return NextResponse.json<ApiResponse>({
+        success: true,
+        data: [],
+      })
+    }
+
+    // Get all completed sessions from all students with segments
     const sessions = await (prisma as any).practiceSession.findMany({
       where: {
-        studentId: tokenPayload.userId,
+        studentId: {
+          in: studentIds,
+        },
         status: 'COMPLETED',
       },
       include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         segments: {
           include: {
             piece: {
@@ -39,6 +67,7 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: 'desc',
       },
+      take: 20, // Limit to recent 20 sessions
     })
 
     return NextResponse.json<ApiResponse>({
@@ -46,7 +75,7 @@ export async function GET(request: NextRequest) {
       data: sessions,
     })
   } catch (error) {
-    console.error('Get practice sessions error:', error)
+    console.error('Get teacher sessions error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json<ApiResponse>({
       success: false,
@@ -56,3 +85,4 @@ export async function GET(request: NextRequest) {
     }, { status: 500 })
   }
 }
+

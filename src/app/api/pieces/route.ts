@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       }, { status: 401 })
     }
 
-    const pieces = await prisma.piece.findMany({
+    const pieces = await (prisma as any).piece.findMany({
       where: { studentId: tokenPayload.userId },
       orderBy: {
         dateStarted: 'desc',
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const piece = await prisma.piece.create({
+    const piece = await (prisma as any).piece.create({
       data: {
         studentId: tokenPayload.userId,
         ...validationResult.data,
@@ -123,7 +123,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Verify piece belongs to student
-    const existingPiece = await prisma.piece.findUnique({
+    const existingPiece = await (prisma as any).piece.findUnique({
       where: { id: pieceId },
       select: { studentId: true },
     })
@@ -142,7 +142,7 @@ export async function PATCH(request: NextRequest) {
       }, { status: 403 })
     }
 
-    const piece = await prisma.piece.update({
+    const piece = await (prisma as any).piece.update({
       where: { id: pieceId },
       data: validationResult.data,
     })
@@ -185,7 +185,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verify piece belongs to student
-    const existingPiece = await prisma.piece.findUnique({
+    const existingPiece = await (prisma as any).piece.findUnique({
       where: { id: pieceId },
       select: { studentId: true },
     })
@@ -204,7 +204,7 @@ export async function DELETE(request: NextRequest) {
       }, { status: 403 })
     }
 
-    await prisma.piece.delete({
+    await (prisma as any).piece.delete({
       where: { id: pieceId },
     })
 

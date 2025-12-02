@@ -40,19 +40,13 @@ export async function GET(
       }, { status: 404 })
     }
 
-    // Get all sessions for this student
-    // Explicitly select fields to avoid issues if migration hasn't run yet
-    const sessions = await prisma.practiceSession.findMany({
-      where: { studentId },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        duration: true,
-        createdAt: true,
-        status: true,
-        audioFilePath: true,
-        audioFileSize: true,
+    // Get all completed sessions for this student with segments
+    const sessions = await (prisma as any).practiceSession.findMany({
+      where: { 
+        studentId,
+        status: 'COMPLETED',
+      },
+      include: {
         student: {
           select: {
             id: true,
@@ -60,44 +54,56 @@ export async function GET(
             email: true,
           },
         },
-        analysis: true,
-        // These fields may not exist if migration hasn't run - Prisma will handle gracefully
-        teacherFeedback: true,
-        teacherFeedbackAudio: true,
-        teacherFeedbackAt: true,
+        segments: {
+          include: {
+            piece: {
+              select: {
+                id: true,
+                name: true,
+                composer: true,
+              },
+            },
+            analysis: true,
+          },
+          orderBy: {
+            recordedAt: 'asc',
+          },
+        },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { date: 'desc' },
     })
 
     // Calculate stats
-    const totalSessions = sessions.length
-    const totalPracticeTime = sessions.reduce((acc, s) => acc + s.duration, 0)
+    const sessionsArray = sessions as any[]
+    const totalSessions = sessionsArray.length
+    const totalPracticeTime = sessionsArray.reduce((acc: number, s: any) => acc + (s.totalDuration || 0), 0)
     const totalMinutes = Math.floor(totalPracticeTime / 60)
-    const analyzedSessions = sessions.filter(s => s.analysis).length
+    const totalSegments = sessionsArray.reduce((acc: number, s: any) => acc + (s.segments?.length || 0), 0)
+    const analyzedSegments = sessionsArray.reduce((acc: number, s: any) => acc + (s.segments?.filter((seg: any) => seg.analysis).length || 0), 0)
     const averageSessionDuration = totalSessions > 0 
       ? Math.floor(totalPracticeTime / totalSessions) 
       : 0
 
     // Get most recent session
-    const mostRecentSession = sessions.length > 0 ? sessions[0] : null
+    const mostRecentSession = sessionsArray.length > 0 ? sessionsArray[0] : null
 
     // Calculate practice frequency (sessions per week)
     const now = new Date()
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-    const sessionsThisWeek = sessions.filter(
-      s => new Date(s.createdAt) >= oneWeekAgo
+    const sessionsThisWeek = sessionsArray.filter(
+      (s: any) => new Date(s.date) >= oneWeekAgo
     ).length
 
     // Calculate streak
     let streak = 0
-    if (sessions.length > 0) {
+    if (sessionsArray.length > 0) {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       
       // Group sessions by date
       const sessionsByDate = new Map<string, boolean>()
-      sessions.forEach(session => {
-        const date = new Date(session.createdAt)
+      sessionsArray.forEach((session: any) => {
+        const date = new Date(session.date)
         date.setHours(0, 0, 0, 0)
         const dateKey = date.toISOString().split('T')[0]
         sessionsByDate.set(dateKey, true)
@@ -132,12 +138,20 @@ export async function GET(
           totalSessions,
           totalPracticeTime,
           totalMinutes,
-          analyzedSessions,
+          totalSegments,
+          analyzedSegments,
           averageSessionDuration,
           sessionsThisWeek,
           streak,
         },
-        sessions,
+        sessions: sessionsArray.map((s: any) => ({
+          id: s.id,
+          date: s.date,
+          totalDuration: s.totalDuration,
+          status: s.status,
+          createdAt: s.createdAt,
+          segments: s.segments,
+        })),
       },
     })
   } catch (error: any) {

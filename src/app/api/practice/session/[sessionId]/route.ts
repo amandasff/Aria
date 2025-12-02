@@ -19,7 +19,7 @@ export async function GET(
     }
 
     // Get session with segments
-    const session = await prisma.practiceSession.findUnique({
+    const session = await (prisma as any).practiceSession.findUnique({
       where: { id: sessionId },
       include: {
         student: {
@@ -67,7 +67,7 @@ export async function GET(
     }
 
     // Calculate total duration from segments if not set
-    const calculatedDuration = session.segments.reduce((acc, seg) => acc + seg.duration, 0)
+    const calculatedDuration = (session.segments as any[]).reduce((acc: number, seg: any) => acc + seg.duration, 0)
 
     return NextResponse.json<ApiResponse>({
       success: true,

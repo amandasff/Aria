@@ -21,7 +21,7 @@ export async function POST(
     }
 
     // Get segment with session
-    const segment = await prisma.practiceSegment.findUnique({
+    const segment = await (prisma as any).practiceSegment.findUnique({
       where: { id: segmentId },
       include: {
         session: {
@@ -73,7 +73,7 @@ export async function POST(
     )
 
     // Save analysis to database
-    const analysis = await prisma.practiceAnalysis.create({
+    const analysis = await (prisma as any).practiceAnalysis.create({
       data: {
         segmentId: segment.id,
         overallFeedback: analysisResult.overallFeedback,
@@ -120,7 +120,7 @@ export async function GET(
     }
 
     // Get analysis
-    const analysis = await prisma.practiceAnalysis.findUnique({
+    const analysis = await (prisma as any).practiceAnalysis.findUnique({
       where: { segmentId },
       include: {
         segment: {

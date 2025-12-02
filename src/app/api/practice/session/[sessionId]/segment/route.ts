@@ -86,7 +86,7 @@ export async function POST(
     }
 
     // Create segment
-    const segment = await prisma.practiceSegment.create({
+    const segment = await (prisma as any).practiceSegment.create({
       data: {
         sessionId,
         pieceId: pieceId || null,
@@ -111,7 +111,7 @@ export async function POST(
     })
 
     // Update session total duration
-    const updatedSession = await prisma.practiceSession.update({
+    const updatedSession = await (prisma as any).practiceSession.update({
       where: { id: sessionId },
       data: {
         totalDuration: {

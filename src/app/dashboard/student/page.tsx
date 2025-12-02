@@ -5,18 +5,34 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AudioRecorder from '@/components/AudioRecorder'
 import AudioPlayer from '@/components/AudioPlayer'
+import SessionCard from '@/components/practice/SessionCard'
+import PieceManager from '@/components/pieces/PieceManager'
+
+interface Segment {
+  id: string
+  title: string
+  type: string
+  notes?: string
+  audioUrl: string
+  duration: number
+  recordedAt: string
+  piece?: {
+    id: string
+    name: string
+    composer?: string
+  }
+  analysis?: any
+  teacherFeedbackText?: string
+  teacherFeedbackAudio?: string
+}
 
 interface Session {
   id: string
-  title: string
-  description?: string
-  duration: number
-  createdAt: string
+  date: string
+  totalDuration: number
   status: string
-  analysis: any
-  teacherFeedback?: string
-  teacherFeedbackAudio?: string
-  teacherFeedbackAt?: string
+  createdAt: string
+  segments: Segment[]
 }
 
 export default function StudentDashboard() {
@@ -29,7 +45,8 @@ export default function StudentDashboard() {
   const [sessionDescription, setSessionDescription] = useState('')
   const [recordedAudio, setRecordedAudio] = useState<{blob: Blob, duration: number} | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null)
+  const [selectedSession, setSelectedSession] = useState<any>(null) // Analysis modal can show segment or legacy session
+  const [showPiecesModal, setShowPiecesModal] = useState(false)
   const [analyzing, setAnalyzing] = useState<string | null>(null)
   const [streak, setStreak] = useState(0)
   const [showStreakCalendar, setShowStreakCalendar] = useState(false)
@@ -59,7 +76,7 @@ export default function StudentDashboard() {
 
       setUser(userData.data)
 
-      // Fetch sessions
+      // Fetch sessions with segments
       const sessionsRes = await fetch('/api/practice/sessions', {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -180,12 +197,12 @@ export default function StudentDashboard() {
     }
   }
 
-  const handleAnalyzeSession = async (sessionId: string) => {
-    setAnalyzing(sessionId)
+  const handleAnalyzeSession = async (segmentId: string) => {
+    setAnalyzing(segmentId)
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`/api/analysis/${sessionId}`, {
+      const response = await fetch(`/api/analysis/segment/${segmentId}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -194,10 +211,11 @@ export default function StudentDashboard() {
         alert('Analysis complete!')
         fetchData()
       } else {
-        alert('Failed to analyze session')
+        const data = await response.json()
+        alert(data.error || 'Failed to analyze segment')
       }
     } catch (error) {
-      alert('Error analyzing session')
+      alert('Error analyzing segment')
     } finally {
       setAnalyzing(null)
     }
@@ -268,26 +286,32 @@ export default function StudentDashboard() {
             </div>
             <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-shadow">
               <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
-                {Math.floor(sessions.reduce((acc, s) => acc + s.duration, 0) / 60)}
+                {Math.floor(sessions.reduce((acc, s) => acc + s.totalDuration, 0) / 60)}
               </div>
               <div className="text-sm text-gray-600 font-medium">Total Minutes</div>
             </div>
             <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-shadow">
               <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
-                {sessions.filter(s => s.analysis).length}
+                {sessions.reduce((acc, s) => acc + s.segments.filter(seg => seg.analysis).length, 0)}
               </div>
-              <div className="text-sm text-gray-600 font-medium">Analyzed Sessions</div>
+              <div className="text-sm text-gray-600 font-medium">Analyzed Segments</div>
             </div>
           </div>
 
           {/* Start Practice Session Button */}
           {!showRecorder && (
-            <div className="mb-6 text-center">
+            <div className="mb-6 flex justify-center gap-4">
               <button
                 onClick={handleStartPracticeSession}
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-[1.01] transition-all"
               >
                 🎵 Start Practice Session
+              </button>
+              <button
+                onClick={() => setShowPiecesModal(true)}
+                className="bg-white text-gray-900 px-6 py-3 rounded-xl text-base font-semibold border border-gray-300 hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all"
+              >
+                📚 Manage Pieces
               </button>
             </div>
           )}
@@ -381,59 +405,26 @@ export default function StudentDashboard() {
               ) : (
                 <div className="space-y-4">
                   {sessions.map((session) => (
-                    <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-lg p-4 hover:shadow-lg transition-all">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h3 className="font-bold text-gray-900 text-base mb-1">{session.title}</h3>
-                          <p className="text-xs text-gray-600">
-                            {new Date(session.createdAt).toLocaleDateString()} • {formatDuration(session.duration)}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          {session.analysis ? (
-                            <button
-                              onClick={() => setSelectedSession(session)}
-                              className="px-3 py-1.5 bg-green-100 text-green-800 text-xs font-semibold rounded-lg hover:bg-green-200 transition-all"
-                            >
-                              View Analysis
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleAnalyzeSession(session.id)}
-                              disabled={analyzing === session.id}
-                              className="px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25"
-                            >
-                              {analyzing === session.id ? 'Analyzing...' : 'Get AI Feedback'}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      <AudioPlayer audioUrl={`/api/practice/sessions/${session.id}/audio`} />
-
-                      {/* Teacher Feedback */}
-                      {(session.teacherFeedback || session.teacherFeedbackAudio) && (
-                        <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                          <p className="text-xs font-semibold text-indigo-900 mb-2">💬 Teacher Feedback:</p>
-                          {session.teacherFeedback && (
-                            <p className="text-gray-700 whitespace-pre-wrap mb-3">{session.teacherFeedback}</p>
-                          )}
-                          {session.teacherFeedbackAudio && (
-                            <div className="mt-2">
-                              <AudioPlayer
-                                audioUrl={session.teacherFeedbackAudio}
-                                title="Teacher Feedback"
-                              />
-                            </div>
-                          )}
-                          {session.teacherFeedbackAt && (
-                            <p className="text-xs text-gray-500 mt-2">
-                              {new Date(session.teacherFeedbackAt).toLocaleString()}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <SessionCard
+                      key={session.id}
+                      session={session}
+                      onAnalyzeSegment={handleAnalyzeSession}
+                      analyzing={analyzing}
+                      onViewAnalysis={(segment) => {
+                        // Create a mock session object for the analysis modal
+                        setSelectedSession({
+                          id: segment.id,
+                          title: segment.title,
+                          description: segment.notes,
+                          duration: segment.duration,
+                          createdAt: segment.recordedAt,
+                          status: 'ANALYZED',
+                          analysis: segment.analysis,
+                          teacherFeedback: segment.teacherFeedbackText,
+                          teacherFeedbackAudio: segment.teacherFeedbackAudio,
+                        } as any)
+                      }}
+                    />
                   ))}
                 </div>
               )}
@@ -568,6 +559,26 @@ export default function StudentDashboard() {
           </div>
         </div>
       )}
+
+      {/* Pieces Management Modal */}
+      {showPiecesModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/95 backdrop-blur-md rounded-xl max-w-2xl w-full p-6 border border-gray-100 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                My Pieces
+              </h2>
+              <button
+                onClick={() => setShowPiecesModal(false)}
+                className="text-gray-500 hover:text-gray-900 text-2xl font-light transition-colors"
+              >
+                ×
+              </button>
+            </div>
+            <PieceManager />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -577,7 +588,7 @@ function PracticeCalendar({ sessions }: { sessions: Session[] }) {
   // Group sessions by date
   const sessionsByDate = new Map<string, Session[]>()
   sessions.forEach(session => {
-    const date = new Date(session.createdAt)
+    const date = new Date(session.date)
     date.setHours(0, 0, 0, 0)
     const dateKey = date.toISOString().split('T')[0]
     if (!sessionsByDate.has(dateKey)) {

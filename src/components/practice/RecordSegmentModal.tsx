@@ -169,7 +169,7 @@ export default function RecordSegmentModal({
               {selectedPiece && (
                 <p className="text-xs text-gray-500 mt-1">
                   {selectedPiece.composer && `${selectedPiece.composer} • `}
-                  {selectedPiece.targetBPM && `Target BPM: ${selectedPiece.targetBPM}`}
+                  {(selectedPiece as any).targetBPM && `Target BPM: ${(selectedPiece as any).targetBPM}`}
                 </p>
               )}
             </div>

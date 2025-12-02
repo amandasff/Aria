@@ -19,7 +19,7 @@ export async function PATCH(
     }
 
     // Get session with segments to calculate total duration
-    const session = await prisma.practiceSession.findUnique({
+    const session = await (prisma as any).practiceSession.findUnique({
       where: { id: sessionId },
       include: {
         segments: {
@@ -52,10 +52,10 @@ export async function PATCH(
     }
 
     // Calculate total duration from segments
-    const totalDuration = session.segments.reduce((acc, seg) => acc + seg.duration, 0)
+    const totalDuration = (session.segments as any[]).reduce((acc: number, seg: any) => acc + seg.duration, 0)
 
     // Update session to completed
-    const updatedSession = await prisma.practiceSession.update({
+    const updatedSession = await (prisma as any).practiceSession.update({
       where: { id: sessionId },
       data: {
         status: 'COMPLETED',

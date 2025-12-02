@@ -17,22 +17,37 @@ interface Student {
   }
 }
 
-interface Session {
+interface Segment {
   id: string
   title: string
-  description?: string
+  type: string
+  notes?: string
+  audioUrl: string
   duration: number
-  createdAt: string
+  recordedAt: string
+  piece?: {
+    id: string
+    name: string
+    composer?: string
+  }
+  analysis?: any
+  teacherFeedbackText?: string
+  teacherFeedbackAudio?: string
+  teacherFeedbackAt?: string
+}
+
+interface Session {
+  id: string
+  date: string
+  totalDuration: number
   status: string
+  createdAt: string
   student: {
     id: string
     name: string
     email: string
   }
-  analysis: any
-  teacherFeedback?: string
-  teacherFeedbackAudio?: string
-  teacherFeedbackAt?: string
+  segments: Segment[]
 }
 
 interface StudentStats {
@@ -46,7 +61,8 @@ interface StudentStats {
     totalSessions: number
     totalPracticeTime: number
     totalMinutes: number
-    analyzedSessions: number
+    totalSegments: number
+    analyzedSegments: number
     averageSessionDuration: number
     sessionsThisWeek: number
     streak: number
@@ -104,7 +120,7 @@ export default function TeacherDashboard() {
       const studentsData = await studentsRes.json()
       setStudents(studentsData.data || [])
 
-      const sessionsRes = await fetch('/api/practice/sessions', {
+      const sessionsRes = await fetch('/api/teachers/sessions', {
         headers: { Authorization: `Bearer ${token}` },
       })
       const sessionsData = await sessionsRes.json()
@@ -197,21 +213,27 @@ export default function TeacherDashboard() {
     }
   }
 
-  const handleAnalyze = async (sessionId: string) => {
-    setAnalyzing(sessionId)
+  const handleAnalyze = async (segmentId: string) => {
+    setAnalyzing(segmentId)
     try {
       const token = localStorage.getItem('token')
-      await fetch(`/api/analysis/${sessionId}`, {
+      const response = await fetch(`/api/analysis/segment/${segmentId}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
-      fetchData()
-      // Refresh student stats if viewing a student
-      if (selectedStudent) {
-        handleViewStudent(selectedStudent.student.id)
+      if (response.ok) {
+        alert('Analysis complete!')
+        fetchData()
+        // Refresh student stats if viewing a student
+        if (selectedStudent) {
+          handleViewStudent(selectedStudent.student.id)
+        }
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to analyze segment')
       }
     } catch (error) {
-      alert('Error analyzing session')
+      alert('Error analyzing segment')
     } finally {
       setAnalyzing(null)
     }
@@ -273,14 +295,15 @@ export default function TeacherDashboard() {
         setFeedbackText('')
         setFeedbackAudio(null)
         
-        // Update the selected session with the new feedback data
-        if (data.data) {
-          setSelectedSession({
-            ...selectedSession,
-            teacherFeedback: data.data.teacherFeedback || null,
-            teacherFeedbackAudio: data.data.teacherFeedbackAudio || null,
-            teacherFeedbackAt: data.data.teacherFeedbackAt || null,
+        // Refresh selected session - feedback is now on segments
+        if (selectedSession && selectedSession.id) {
+          const sessionRes = await fetch(`/api/practice/session/${selectedSession.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
           })
+          const sessionData = await sessionRes.json()
+          if (sessionRes.ok && sessionData.data) {
+            setSelectedSession(sessionData.data.session as any)
+          }
         }
         
         // Refresh all data
@@ -363,7 +386,7 @@ export default function TeacherDashboard() {
             </div>
             <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-100/50 shadow-lg p-4 hover:shadow-xl transition-shadow">
               <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
-                {Math.floor(sessions.reduce((acc, s) => acc + s.duration, 0) / 60)}
+                {Math.floor((sessions as any[]).reduce((acc: number, s: any) => acc + (s.totalDuration || s.duration || 0), 0) / 60)}
               </div>
               <div className="text-sm text-gray-600 font-medium">Minutes Practiced</div>
             </div>
@@ -458,53 +481,33 @@ export default function TeacherDashboard() {
                   </p>
                 ) : (
                   <div className="space-y-4">
-                    {sessions.slice(0, 10).map((session) => (
-                      <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all">
-                        <div className="flex justify-between items-start mb-4">
+                    {(sessions as any[]).slice(0, 10).map((session: any) => (
+                      <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4 hover:shadow-lg transition-all">
+                        <div className="flex justify-between items-start mb-3">
                           <div className="flex-1">
-                            <h3 className="font-bold text-gray-900 text-lg mb-1">
-                              {session.title}
-                            </h3>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-bold text-gray-900 text-base">
+                                Practice Session
+                              </h3>
+                              <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded">
+                                {session.segments?.length || 0} {session.segments?.length === 1 ? 'segment' : 'segments'}
+                              </span>
+                            </div>
                             <p className="text-sm text-gray-600">
-                              {session.student.name}
+                              {session.student?.name || 'Unknown Student'}
                             </p>
-                            {session.description && (
-                              <p className="text-xs text-gray-500 mt-2 italic line-clamp-2">{session.description}</p>
-                            )}
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(session.date || session.createdAt).toLocaleDateString()} • {formatDuration(session.totalDuration || session.duration || 0)}
+                            </p>
                           </div>
-                          <span className="text-sm text-gray-600 font-medium ml-2">
-                            {formatDuration(session.duration)}
-                          </span>
                         </div>
 
                         <button
                           onClick={() => setSelectedSession(session)}
-                          className="w-full mb-3 bg-gray-100 text-gray-900 py-2 px-4 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-all"
+                          className="w-full bg-gray-100 text-gray-900 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-all"
                         >
-                          Listen to Recording
+                          View Session
                         </button>
-
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-500">
-                            {new Date(session.createdAt).toLocaleDateString()}
-                          </span>
-                          {session.analysis ? (
-                            <button
-                              onClick={() => setSelectedSession(session)}
-                              className="px-4 py-2 bg-green-100 text-green-800 text-sm font-semibold rounded-xl hover:bg-green-200 transition-all"
-                            >
-                              View Analysis
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleAnalyze(session.id)}
-                              disabled={analyzing === session.id}
-                              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-500/25"
-                            >
-                              {analyzing === session.id ? 'Analyzing...' : 'Analyze'}
-                            </button>
-                          )}
-                        </div>
                       </div>
                     ))}
                   </div>
@@ -559,9 +562,9 @@ export default function TeacherDashboard() {
               </div>
               <div className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4">
                 <div className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  {selectedStudent.stats.analyzedSessions}
+                  {selectedStudent.stats.analyzedSegments || 0}
                 </div>
-                <div className="text-xs text-gray-600 font-medium">Analyzed</div>
+                <div className="text-xs text-gray-600 font-medium">Analyzed Segments</div>
               </div>
               <div className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4">
                 <div className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -582,52 +585,63 @@ export default function TeacherDashboard() {
                     <div key={session.id} className="bg-white/60 backdrop-blur-sm border border-gray-100 rounded-xl p-4 hover:shadow-lg transition-all">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
-                          <h4 className="font-bold text-gray-900">{session.title}</h4>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-bold text-gray-900">Practice Session</h4>
+                            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded">
+                              {session.segments.length} {session.segments.length === 1 ? 'segment' : 'segments'}
+                            </span>
+                          </div>
                           <p className="text-sm text-gray-600">
-                            {new Date(session.createdAt).toLocaleDateString()} • {formatDuration(session.duration)}
+                            {new Date(session.date).toLocaleDateString()} • {formatDuration(session.totalDuration)}
                           </p>
-                          {session.description && (
-                            <p className="text-xs text-gray-500 mt-2 italic line-clamp-2">{session.description}</p>
-                          )}
                         </div>
-                        {session.analysis ? (
-                          <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-lg ml-2">
-                            Analyzed
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => handleAnalyze(session.id)}
-                            disabled={analyzing === session.id}
-                            className="px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all ml-2"
-                          >
-                            {analyzing === session.id ? 'Analyzing...' : 'Analyze'}
-                          </button>
-                        )}
+                      </div>
+                      <div className="space-y-2 mb-3">
+                        {session.segments.map((segment) => (
+                          <div key={segment.id} className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg p-2">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-gray-900 text-sm">{segment.title}</span>
+                                  <span className="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded">
+                                    {segment.type}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-600 mt-0.5">
+                                  {formatDuration(segment.duration)} • {new Date(segment.recordedAt).toLocaleTimeString()}
+                                </p>
+                                {segment.notes && (
+                                  <p className="text-xs text-gray-500 mt-1 italic">{segment.notes}</p>
+                                )}
+                              </div>
+                              <div className="flex gap-1">
+                                {segment.analysis ? (
+                                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">
+                                    Analyzed
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => handleAnalyze(segment.id)}
+                                    disabled={analyzing === segment.id}
+                                    className="px-2 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold rounded hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all"
+                                  >
+                                    {analyzing === segment.id ? 'Analyzing...' : 'Analyze'}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => {
-                            setSelectedSession(session)
+                            setSelectedSession(session as any)
                             setSelectedStudent(null)
                           }}
                           className="flex-1 bg-gray-100 text-gray-900 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-all"
                         >
-                          Listen to Recording
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedSession(session)
-                            setFeedbackText(session.teacherFeedback || '')
-                            setFeedbackAudio(null)
-                            setShowFeedbackModal(true)
-                          }}
-                          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                            session.teacherFeedback || session.teacherFeedbackAudio
-                              ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
-                              : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25'
-                          }`}
-                        >
-                          {session.teacherFeedback || session.teacherFeedbackAudio ? '💬 Edit Feedback' : '💬 Give Feedback'}
+                          View Session
                         </button>
                       </div>
                     </div>
@@ -652,7 +666,7 @@ export default function TeacherDashboard() {
           <div className="bg-white/95 backdrop-blur-md rounded-xl max-w-2xl w-full p-6 max-h-[85vh] overflow-y-auto border border-gray-100 shadow-2xl">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
-                {selectedSession.title}
+                Practice Session
               </h2>
               <button
                 onClick={() => setSelectedSession(null)}
@@ -664,111 +678,89 @@ export default function TeacherDashboard() {
 
             <div className="mb-6 space-y-2">
               <p className="text-gray-700">
-                <span className="font-semibold">Student:</span> {selectedSession.student.name}
+                <span className="font-semibold">Student:</span> {(selectedSession as any).student?.name || 'Unknown'}
               </p>
               <p className="text-gray-700">
-                <span className="font-semibold">Duration:</span> {formatDuration(selectedSession.duration)}
+                <span className="font-semibold">Date:</span> {new Date((selectedSession as any).date || (selectedSession as any).createdAt).toLocaleDateString()}
               </p>
-              {selectedSession.description && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <p className="text-sm font-semibold text-blue-900 mb-2">Student Notes:</p>
-                  <p className="text-gray-700 whitespace-pre-wrap">{selectedSession.description}</p>
-                </div>
-              )}
+              <p className="text-gray-700">
+                <span className="font-semibold">Total Duration:</span> {formatDuration((selectedSession as any).totalDuration || (selectedSession as any).duration || 0)}
+              </p>
+              <p className="text-gray-700">
+                <span className="font-semibold">Segments:</span> {(selectedSession as any).segments?.length || 0}
+              </p>
             </div>
 
-            {/* Audio Player */}
-            <div className="mb-6">
-              <AudioPlayer
-                audioUrl={`/api/practice/sessions/${selectedSession.id}/audio`}
-                title="Practice Recording"
-              />
-            </div>
+            {/* Segments */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-900">Segments</h3>
+              {((selectedSession as any).segments || []).map((segment: any) => (
+                <div key={segment.id} className="p-4 bg-white/60 backdrop-blur-sm border border-gray-200 rounded-xl">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-bold text-gray-900">{segment.title}</h4>
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded">
+                          {segment.type}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600">
+                        {formatDuration(segment.duration)} • {new Date(segment.recordedAt).toLocaleTimeString()}
+                      </p>
+                      {segment.notes && (
+                        <p className="text-xs text-gray-500 mt-2 italic">{segment.notes}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <AudioPlayer audioUrl={segment.audioUrl} title={segment.title} />
 
-            {/* Analysis if available */}
-            {selectedSession.analysis && (
-              <div className="mt-6 space-y-6 pt-6 border-t border-gray-200">
-                <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-4">
-                    AI Analysis
-                  </h3>
-                  {selectedSession.analysis.overallScore && (
-                    <div className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                      {selectedSession.analysis.overallScore}/10
+                  {/* Segment Analysis */}
+                  {segment.analysis && (
+                    <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                      <h5 className="text-sm font-semibold text-green-900 mb-2">AI Analysis</h5>
+                      {segment.analysis.overallScore && (
+                        <div className="text-lg font-bold text-green-800 mb-2">
+                          Score: {segment.analysis.overallScore}/10
+                        </div>
+                      )}
+                      <p className="text-sm text-gray-700">{segment.analysis.overallFeedback}</p>
                     </div>
                   )}
-                  <p className="text-gray-700 leading-relaxed mb-6">
-                    {selectedSession.analysis.overallFeedback}
-                  </p>
-                </div>
 
-                {selectedSession.analysis.strengths && JSON.parse(selectedSession.analysis.strengths).length > 0 && (
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Strengths</h4>
-                    <ul className="list-disc list-inside space-y-2">
-                      {JSON.parse(selectedSession.analysis.strengths).map((strength: string, i: number) => (
-                        <li key={i} className="text-green-700">{strength}</li>
-                      ))}
-                    </ul>
+                  {/* Teacher Feedback for Segment */}
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    {(segment.teacherFeedbackText || segment.teacherFeedbackAudio) ? (
+                      <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                        <p className="text-xs font-semibold text-indigo-900 mb-2">💬 Your Feedback:</p>
+                        {segment.teacherFeedbackText && (
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap mb-2">
+                            {segment.teacherFeedbackText}
+                          </p>
+                        )}
+                        {segment.teacherFeedbackAudio && (
+                          <AudioPlayer
+                            audioUrl={segment.teacherFeedbackAudio}
+                            title="Your Audio Feedback"
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setSelectedSession({ ...selectedSession, currentSegment: segment } as any)
+                          setFeedbackText('')
+                          setFeedbackAudio(null)
+                          setShowFeedbackModal(true)
+                        }}
+                        className="w-full px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all"
+                      >
+                        💬 Give Feedback
+                      </button>
+                    )}
                   </div>
-                )}
-
-                {selectedSession.analysis.areasForImprovement && JSON.parse(selectedSession.analysis.areasForImprovement).length > 0 && (
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Areas for Improvement</h4>
-                    <ul className="list-disc list-inside space-y-2">
-                      {JSON.parse(selectedSession.analysis.areasForImprovement).map((area: string, i: number) => (
-                        <li key={i} className="text-orange-700">{area}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Teacher Feedback Section */}
-            <div className="mt-6 space-y-4 pt-6 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
-                  Your Feedback
-                </h3>
-                <button
-                  onClick={() => {
-                    setFeedbackText(selectedSession.teacherFeedback || '')
-                    setFeedbackAudio(null)
-                    setShowFeedbackModal(true)
-                  }}
-                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
-                >
-                  {selectedSession.teacherFeedback || selectedSession.teacherFeedbackAudio ? 'Edit Feedback' : 'Add Feedback'}
-                </button>
-              </div>
-
-              {selectedSession.teacherFeedback && (
-                <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-                  <p className="text-sm font-semibold text-green-900 mb-2">Your Text Feedback:</p>
-                  <p className="text-gray-700 whitespace-pre-wrap">{selectedSession.teacherFeedback}</p>
-                  {selectedSession.teacherFeedbackAt && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      {new Date(selectedSession.teacherFeedbackAt).toLocaleString()}
-                    </p>
-                  )}
                 </div>
-              )}
-
-              {selectedSession.teacherFeedbackAudio && (
-                <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-                  <p className="text-sm font-semibold text-green-900 mb-2">Your Audio Feedback:</p>
-                  <AudioPlayer
-                    audioUrl={selectedSession.teacherFeedbackAudio}
-                    title="Teacher Feedback"
-                  />
-                </div>
-              )}
-
-              {!selectedSession.teacherFeedback && !selectedSession.teacherFeedbackAudio && (
-                <p className="text-gray-500 text-sm italic">No feedback provided yet</p>
-              )}
+              ))}
             </div>
 
             <button

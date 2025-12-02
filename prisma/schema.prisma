@@ -32,7 +32,7 @@ model User {
   practiceSessions LegacyPracticeSession[] @relation("LegacyStudentSessions")
 
   // New nested practice sessions
-  newPracticeSessions PracticeSession[] @relation("StudentSessions")
+  practiceSessionsNew PracticeSession[] @relation("StudentSessions")
 
   // Pieces (only for students)
   pieces Piece[] @relation("StudentPieces")
