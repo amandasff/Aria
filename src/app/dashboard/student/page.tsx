@@ -82,6 +82,32 @@ export default function StudentDashboard() {
     }
   }
 
+  const handleStartPracticeSession = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch('/api/practice/session/start', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.data) {
+        router.push(`/practice/${data.data.sessionId}`)
+      } else {
+        alert(data.error || 'Failed to start practice session')
+      }
+    } catch (error) {
+      console.error('Error starting practice session:', error)
+      alert('Error starting practice session')
+    }
+  }
+
   const handleRecordingComplete = (blob: Blob, duration: number) => {
     setRecordedAudio({ blob, duration })
   }
@@ -254,14 +280,14 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* Record Practice Button */}
+          {/* Start Practice Session Button */}
           {!showRecorder && (
             <div className="mb-6 text-center">
               <button
-                onClick={() => setShowRecorder(true)}
+                onClick={handleStartPracticeSession}
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl text-base font-semibold hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-[1.01] transition-all"
               >
-                🎵 Start New Practice Session
+                🎵 Start Practice Session
               </button>
             </div>
           )}

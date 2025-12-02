@@ -11,25 +11,31 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   // "TEACHER" or "STUDENT"
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  name     String
+  role     String // "TEACHER" or "STUDENT"
 
   // For student accounts - reference to their teacher
   teacherId String?
-  teacher   User?    @relation("TeacherStudents", fields: [teacherId], references: [id], onDelete: Cascade)
+  teacher   User?   @relation("TeacherStudents", fields: [teacherId], references: [id], onDelete: Cascade)
 
   // For teacher accounts - list of their students
-  students  User[]   @relation("TeacherStudents")
+  students User[] @relation("TeacherStudents")
 
   // Invitation token for students (used when teacher invites)
   inviteToken     String?   @unique
   inviteExpiresAt DateTime?
 
-  // Practice sessions (only for students)
-  practiceSessions PracticeSession[]
+  // Practice sessions (only for students) - legacy
+  practiceSessions LegacyPracticeSession[] @relation("LegacyStudentSessions")
+
+  // New nested practice sessions
+  newPracticeSessions PracticeSession[] @relation("StudentSessions")
+
+  // Pieces (only for students)
+  pieces Piece[] @relation("StudentPieces")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -38,69 +44,140 @@ model User {
   @@index([inviteToken])
 }
 
-model PracticeSession {
-  id            String        @id @default(cuid())
-
-  // Student who recorded this session
-  studentId     String
-  student       User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  // Session metadata
-  title         String
-  description   String?
-  duration      Int           // Duration in seconds
-  audioFilePath String        // Path to stored audio file
-  audioFileSize Int?          // File size in bytes
-  status        String        @default("COMPLETED") // "RECORDING", "COMPLETED", or "ANALYZED"
-  
-  // Teacher feedback
-  teacherFeedback      String?  // Text feedback from teacher
-  teacherFeedbackAudio String?  // URL to teacher's audio feedback
-  teacherFeedbackAt    DateTime? // When teacher provided feedback
-
-  // Analysis results
-  analysis      PracticeAnalysis?
-
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+// Legacy model - will be migrated to new structure
+model LegacyPracticeSession {
+  id                   String                  @id @default(cuid())
+  studentId            String
+  student              User                    @relation("LegacyStudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
+  title                String
+  description          String?
+  duration             Int
+  audioFilePath        String
+  audioFileSize        Int?
+  status               String                  @default("COMPLETED")
+  teacherFeedback      String?
+  teacherFeedbackAudio String?
+  teacherFeedbackAt    DateTime?
+  analysis             LegacyPracticeAnalysis?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
 
   @@index([studentId])
   @@index([createdAt])
 }
 
-model PracticeAnalysis {
-  id        String   @id @default(cuid())
+// New nested practice session structure
+model PracticeSession {
+  id            String            @id @default(cuid())
+  studentId     String
+  student       User              @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
+  date          DateTime          @default(now())
+  totalDuration Int               @default(0) // in seconds
+  status        SessionStatus     @default(ACTIVE) // ACTIVE or COMPLETED
+  segments      PracticeSegment[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
-  // Associated practice session
-  sessionId String          @unique
-  session   PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  @@index([studentId])
+  @@index([createdAt])
+}
 
-  // AI Analysis Results
-  overallFeedback String        // General feedback from Claude
-
-  // Identified pieces/exercises (stored as JSON string)
-  // Example: [{"name": "Bach Prelude", "duration": 300, "timeSpent": "5:00"}]
-  piecesIdentified String?
-
-  // Time breakdown (stored as JSON string)
-  // Example: {"warmup": 300, "technique": 600, "repertoire": 900}
-  timeBreakdown String?
-
-  // Specific suggestions (stored as JSON string)
-  // Example: [{"timestamp": "2:30", "issue": "Timing inconsistency", "suggestion": "Use metronome"}]
-  suggestions String?
-
-  // Strengths identified (stored as JSON string)
-  strengths String?
-
-  // Areas for improvement (stored as JSON string)
-  areasForImprovement String?
-
-  // Overall score (1-10)
-  overallScore Int?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model PracticeSegment {
+  id                   String            @id @default(cuid())
+  sessionId            String
+  session              PracticeSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  pieceId              String?
+  piece                Piece?            @relation(fields: [pieceId], references: [id], onDelete: SetNull)
+  title                String
+  type                 SegmentType       @default(PIECE) // PIECE, WARMUP, TECHNIQUE, SIGHTREADING, OTHER
+  notes                String?
+  audioUrl             String
+  duration             Int // in seconds
+  metronomeBPM         Int?
+  referenceVideoUrl    String?
+  recordedAt           DateTime          @default(now())
+  analysis             PracticeAnalysis?
+  teacherFeedbackText  String?
+  teacherFeedbackAudio String?
+  teacherFeedbackAt    DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   @@index([sessionId])
+  @@index([pieceId])
+}
+
+model Piece {
+  id                       String            @id @default(cuid())
+  name                     String
+  composer                 String?
+  studentId                String
+  student                  User              @relation("StudentPieces", fields: [studentId], references: [id], onDelete: Cascade)
+  difficulty               String?
+  dateStarted              DateTime          @default(now())
+  status                   PieceStatus       @default(LEARNING) // LEARNING, PRACTICING, PERFORMANCE_READY, MASTERED
+  targetBPM                Int?
+  defaultReferenceVideoUrl String?
+  notes                    String?
+  segments                 PracticeSegment[]
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+
+  @@index([studentId])
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+}
+
+enum SegmentType {
+  PIECE
+  WARMUP
+  TECHNIQUE
+  SIGHTREADING
+  OTHER
+}
+
+enum PieceStatus {
+  LEARNING
+  PRACTICING
+  PERFORMANCE_READY
+  MASTERED
+}
+
+// Legacy analysis model
+model LegacyPracticeAnalysis {
+  id                  String                @id @default(cuid())
+  sessionId           String                @unique
+  session             LegacyPracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  overallFeedback     String
+  piecesIdentified    String?
+  timeBreakdown       String?
+  suggestions         String?
+  strengths           String?
+  areasForImprovement String?
+  overallScore        Int?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@index([sessionId])
+}
+
+// New analysis model - links to segment
+model PracticeAnalysis {
+  id                  String          @id @default(cuid())
+  segmentId           String          @unique
+  segment             PracticeSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  overallFeedback     String
+  piecesIdentified    String?
+  timeBreakdown       String?
+  suggestions         String?
+  strengths           String?
+  areasForImprovement String?
+  overallScore        Int?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([segmentId])
 }
